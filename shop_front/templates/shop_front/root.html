@@ -1,0 +1,13 @@
+{% extends "shop_front/base.html" %}
+
+{% block content %}
+
+<h2>Press below to begin order </h2>
+<div class=container>
+	{% if user.is_authenticated %}
+		<button type="button" class="btn btn-primary" onclick="location.href='{% url 'shop_front:shop_front-home' %}'">Start order</button>
+	{% else %}
+		<button type="button" class="btn btn-primary" onclick="location.href='#'">Start order</button>
+	{% endif %}
+	</div>
+{% endblock content %}
