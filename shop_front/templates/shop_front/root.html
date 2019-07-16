@@ -7,7 +7,7 @@
 	{% if user.is_authenticated %}
 		<button type="button" class="btn btn-primary" onclick="location.href='{% url 'shop_front:shop_front-home' %}'">Start order</button>
 	{% else %}
-		<button type="button" class="btn btn-primary" onclick="location.href='#'">Start order</button>
+		<button type="button" class="btn btn-primary" onclick="location.href='{% url 'login' %}'">Start order</button>
 	{% endif %}
 	</div>
 {% endblock content %}
