@@ -50,5 +50,8 @@
         <div class="fixed-bottom container__">
 			<button class="btn btn-primary" onclick="location.href='{% url 'shopping_cart:order_summary' %}'">Order_Summary</button>
 		</div>
-    {% endfor %}
+	{% endfor %}
+{% if checkout == True %}
+<div class="alert">Checkout Completed</div>
+{% endif %}
 {% endblock content %}

@@ -14,10 +14,12 @@ from .models import FoodItem
 def root(request):
     return render(request, 'shop_front/root.html')
 
-def home(request):
+def home(request, checkout_status=0):
+	if checkout_status == "1":
+		checkout_status =  True
 	groups = FoodItem.objects.order_by().values('food_group').distinct()
-
 	context = {
+			'checkout' : checkout_status,
 			'groups' : groups,
 	}
 	return render(request, 'shop_front/home.html', context)

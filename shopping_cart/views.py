@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from accounts.models import Profile
-
+from random import choice
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -83,19 +83,20 @@ def checkout(request):
     return redirect(reverse('shopping_cart:transaction'))
 
 def success(request):
-    return redirect(reverse('shop_front:shop_front-home'))
+    return redirect(reverse('shop_front:shop_front-home-checkout', args="1"))
 
 def update_Transaction_history(request):
-    user_Profile = get_object_or_404(Profile, user=request.user)
-    user_items = []
-    for item in get_object_or_404(Profile, user=request.user).inventory.item_set.all():
-        f_item = FoodItem.objects.filter(name=item.name)
-        user_items.append(f_item.get())
-    transaction = Transaction(owner=user_Profile,ref_code="Sample3")
-    transaction.save()
-    transaction.items.set(user_items)
+    # user_Profile = get_object_or_404(Profile, user=request.user)
+    # user_items = []
+    # for item in get_object_or_404(Profile, user=request.user).inventory.item_set.all():
+    #     f_item = FoodItem.objects.filter(name=item.name)
+    #     user_items.append(f_item.get())
+    # REF_CODE = ''.join([choice(lst_) for x in range(26)])
+    # transaction = Transaction(owner=user_Profile,ref_code="Sample3")
+    # transaction.save()
+    # transaction.items.set(user_items)
     #print(Transaction.objects.filter(ref_code="Sample3").last().items.all().get().name)
-    user_Profile.inventory.item_set.all().delete()
+    # user_Profile.inventory.item_set.all().delete()
     return redirect(reverse('shopping_cart:success'))
 
 	#ref_code = ''.join(choice(choices) for i in range(40)) #40 Random Numbers and Letters

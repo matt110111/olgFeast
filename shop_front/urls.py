@@ -13,6 +13,7 @@ app_name = 'shop_front'
 urlpatterns = [
     path('', views.root, name='shop_front-root'),
     path('shop/', views.home, name='shop_front-home'),
+    path('shop/<checkout_status>', views.home, name='shop_front-home-checkout'),
     path('shop/detail/<group>', views.detail, name='shop_front-detail_list'),
     path('shop/item/detail/',ItemDetailView.as_view(), name='item-detail'),
     path('shop/item/new/', ItemCreateView.as_view(), name='item-create'),
