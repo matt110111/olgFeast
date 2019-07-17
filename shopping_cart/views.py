@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.
 
 from shop_front.models import FoodItem
-from shopping_cart.models import Item, Inventory
+from shopping_cart.models import Item, Inventory, Transaction
 
 def get_user_pending_order(request):
     # get order for the correct user
@@ -23,7 +23,7 @@ def get_user_pending_order(request):
 
 def order_details(request, **kwargs):
     existing_order = get_user_pending_order(request)
-    print (existing_order)
+
     total = 0
     context = {
         'order': existing_order,
@@ -77,13 +77,25 @@ def delete_cart(request, **kwargs):
     user_inventory = get_object_or_404(Profile, user=request.user).inventory
     user_inventory.item_set.all().delete()
     return redirect(reverse('shopping_cart:order_summary'))
+
 def checkout(request):
-	    return redirect(reverse('shopping_cart:success'))
+    
+    return redirect(reverse('shopping_cart:transaction'))
 
 def success(request):
     return redirect(reverse('shop_front:shop_front-home'))
 
 def update_Transaction_history(request):
-	pass
+    user_Profile = get_object_or_404(Profile, user=request.user)
+    user_items = []
+    for item in get_object_or_404(Profile, user=request.user).inventory.item_set.all():
+        f_item = FoodItem.objects.filter(name=item.name)
+        user_items.append(f_item.get())
+    transaction = Transaction(owner=user_Profile,ref_code="Sample3")
+    transaction.save()
+    transaction.items.set(user_items)
+    #print(Transaction.objects.filter(ref_code="Sample3").last().items.all().get().name)
+    user_Profile.inventory.item_set.all().delete()
+    return redirect(reverse('shopping_cart:success'))
 
 	#ref_code = ''.join(choice(choices) for i in range(40)) #40 Random Numbers and Letters

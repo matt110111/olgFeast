@@ -1,6 +1,9 @@
 from django.db import models
-from accounts.models import Profile
 from django.contrib.auth.models import User
+
+
+from accounts.models import Profile
+from  shop_front.models import FoodItem
 
 class Inventory(models.Model):
     user = models.OneToOneField(Profile, on_delete=models.CASCADE)
@@ -21,12 +24,12 @@ class Item(models.Model):
     def __str__(self):
     	return f'{self.name}'
 
-
+ 
 class Transaction(models.Model):
     ref_code = models.CharField(max_length=40)
     owner = models.OneToOneField(Profile, on_delete=models.CASCADE)
     date_ordered = models.DateTimeField(auto_now=False, auto_now_add=True)
-	
+    items = models.ManyToManyField(FoodItem)
 
 
     def get_total_tickets(self):
@@ -34,4 +37,5 @@ class Transaction(models.Model):
         for item in items:
             total += item.value
         return total
+
 

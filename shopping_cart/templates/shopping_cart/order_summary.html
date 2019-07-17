@@ -59,13 +59,14 @@
         </td>
        <td colspan=2>
           {% if order %}
-            <a href="{% url 'shopping_cart:checkout' %}" class="pull-right btn btn-primary">Proceed To Checkout</a>
+            <a href="{% url 'shopping_cart:transaction' %}" class="pull-right btn btn-primary">Proceed To Checkout</a>
           {% endif %}
         </td>
       </tr>
     </table>
      
    </div>
+    <!-- add functionality to only display button when cart contains items -->
     <a class="btn btn-primary" onclick="return confirm_delete_cart()" href="{% url 'shopping_cart:delete_cart' %}">Delete Cart</a>
 </section>
 
