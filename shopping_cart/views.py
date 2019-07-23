@@ -4,7 +4,7 @@ from random import choice
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
-
+from django.db import connection
 
 
 # Create your views here.
@@ -86,17 +86,33 @@ def success(request):
     return redirect(reverse('shop_front:shop_front-home-checkout', args="1"))
 
 def update_Transaction_history(request):
-    # user_Profile = get_object_or_404(Profile, user=request.user)
-    # user_items = []
-    # for item in get_object_or_404(Profile, user=request.user).inventory.item_set.all():
-    #     f_item = FoodItem.objects.filter(name=item.name)
-    #     user_items.append(f_item.get())
-    # REF_CODE = ''.join([choice(lst_) for x in range(26)])
-    # transaction = Transaction(owner=user_Profile,ref_code="Sample3")
-    # transaction.save()
-    # transaction.items.set(user_items)
-    #print(Transaction.objects.filter(ref_code="Sample3").last().items.all().get().name)
-    # user_Profile.inventory.item_set.all().delete()
+    list_char='abcdefghijklmnopqrstuvxyz1234567890'
+    list_char= [letter for letter in list_char]
+    ref_code = ''.join([choice(list_char) for i in range(16)])
+    user_Profile = get_object_or_404(Profile, user=request.user)
+    transaction = Transaction(owner=user_Profile,ref_code=ref_code)
+    transaction.save()
+    user_items = []
+    for item in get_object_or_404(Profile, user=request.user).inventory.item_set.all():
+        f_item = FoodItem.objects.filter(name=item.name).get()
+        transaction.items.add(f_item)
+        transaction.save()
+        update_quanity(quanity=item.quanity,f_item=f_item)
+        # id = Transaction.objects.raw('SELECT id FROM shopping_cart_transaction_items where fooditem_id = %s order by id desc limit 1',[f_item.id])[-1].id
+        # test = Transaction.objects.raw('update shopping_cart_transaction_items set food_quanity=%s where id=%s',[item.quanity,id])
+    transaction.save()
+    #print(Transaction.objects.filter(ref_code=ref_code).last().items.all())
+    user_Profile.inventory.item_set.all().delete()
     return redirect(reverse('shopping_cart:success'))
 
 	#ref_code = ''.join(choice(choices) for i in range(40)) #40 Random Numbers and Letters
+
+def get_quanity(quanity=1,f_item=0):
+    with connection.cursor() as cursor:
+        pass
+
+def update_quanity(quanity=1,f_item=0):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT id FROM shopping_cart_transaction_items where fooditem_id = %s order by id desc limit 1", [f_item.id])
+        id = cursor.fetchone()[0]
+        cursor.execute("UPDATE shopping_cart_transaction_items SET food_quanity=%s WHERE id=%s",[quanity,id])
