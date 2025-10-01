@@ -23,7 +23,7 @@ This document outlines the major changes and improvements made during the upgrad
 - **certifi**: 2019.6.16 → 2024.8.30 (SSL certificate updates)
 - **urllib3**: 1.25.3 → 2.2.3 (Security patches)
 - **lxml**: 4.3.4 → 5.3.0 (XML processing security)
-- **defusedxml**: 0.6.0 → 0.8.0 (XML attack prevention)
+- **defusedxml**: 0.6.0 → 0.7.1 (XML attack prevention)
 
 ## 🏗️ Django Changes
 
