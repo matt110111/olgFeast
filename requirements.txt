@@ -1,0 +1,48 @@
+# Updated requirements for olgFeast - Latest versions as of 2025
+# Django and related packages
+Django==5.2.6
+django-crispy-forms==2.3
+crispy-bootstrap3==0.7
+django-allauth==0.66.0
+
+# Database and ORM
+sqlparse==0.5.0
+
+# Image processing
+Pillow==11.0.0
+
+# HTTP and networking
+requests==2.32.3
+urllib3==2.2.3
+certifi==2024.8.30
+charset-normalizer==3.4.0
+idna==3.10
+
+# XML and HTML processing
+lxml==5.3.0
+defusedxml==0.8.0
+cssselect==1.2.0
+pyquery==2.0.1
+
+# Markdown and text processing
+Markdown==3.7.0
+Pygments==2.18.0
+
+# OAuth and authentication
+oauthlib==3.2.2
+requests-oauthlib==2.0.0
+python3-openid==3.2.0
+
+# Payment processing
+stripe==14.15.0
+braintree==4.32.0
+
+# Utilities
+pytz==2024.2
+django-tables2==2.7.0
+
+# Development and testing (optional)
+# pytest==8.3.4
+# pytest-django==4.9.0
+# black==24.10.0
+# flake8==7.1.1

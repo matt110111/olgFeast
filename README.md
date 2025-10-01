@@ -20,6 +20,21 @@ A modern Django-based restaurant order management system with live order trackin
 - **Git** for cloning the repository
 - **Virtual Environment** (recommended)
 
+### 🔄 Upgrading from Older Versions
+
+If you're upgrading from an older version of olgFeast:
+
+```bash
+# Run the automated upgrade script
+./upgrade_app.sh
+
+# Or manually upgrade
+pip install -r requirements.txt
+python upgrade_django.py
+```
+
+**Note**: The application now uses Django 5.2.6 with the latest package versions.
+
 ### 📋 Installation Steps
 
 #### 1. Clone the Repository
@@ -248,6 +263,12 @@ Key settings in `olgFeast/settings.py`:
 - `DEBUG = True` (for development)
 - `ALLOWED_HOSTS = ['*']` (for testing)
 - `CRISPY_TEMPLATE_PACK = 'bootstrap3'`
+- `DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'` (Django 5.2+)
+
+### Requirements Files
+- `requirements.txt` - Base requirements for all environments
+- `requirements-dev.txt` - Development tools and testing
+- `requirements-prod.txt` - Production deployment with additional security and performance packages
 
 ---
 

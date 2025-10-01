@@ -1,0 +1,33 @@
+# Production requirements for olgFeast
+# Base requirements
+-r requirements.txt
+
+# Production WSGI server
+gunicorn==23.0.0
+
+# Production database (PostgreSQL)
+psycopg2-binary==2.9.10
+
+# Production static files
+whitenoise==6.8.2
+
+# Production logging
+structlog==24.4.0
+
+# Production monitoring
+sentry-sdk==2.18.0
+
+# Production caching (Redis)
+redis==5.2.1
+django-redis==5.4.0
+
+# Production security
+django-cors-headers==4.6.0
+django-ratelimit==4.1.0
+
+# Production email
+django-anymail==11.2.0
+
+# Production file storage (AWS S3)
+boto3==1.35.93
+django-storages==1.14.4
