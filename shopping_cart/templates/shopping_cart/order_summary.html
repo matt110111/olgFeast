@@ -16,14 +16,14 @@
    <div class="row">
     <table class="table table-hover table-bordered text-center">
       <tr class="text-center">
-        <th>Quanity</th>
+        <th>Quantity</th>
         <th>Item</th>
         <th>Tickets</th>
       </tr>
       {% for item in order %}
         <tr>
-          <td><a href="{% url 'shopping_cart:manipulate_quanity' item.id 'down' %}" ><i class="fas fa-minus pad_"></i></a>  {{ item.quanity }} 
-          <a href="{% url 'shopping_cart:manipulate_quanity' item.id 'up' %}"><i class="fas fa-plus pad_"></i></a></td>
+          <td><a href="{% url 'shopping_cart:manipulate_quantity' item.id 'down' %}" ><i class="fas fa-minus pad_"></i></a>  {{ item.quantity }} 
+          <a href="{% url 'shopping_cart:manipulate_quantity' item.id 'up' %}"><i class="fas fa-plus pad_"></i></a></td>
           <td>
             {{ item.name }}
             <span class="pull-right">
@@ -32,7 +32,7 @@
               </a>
             </span>
           </td>
-          <td>{% widthratio item.ticket 1 item.quanity %}</td>
+          <td>{% widthratio item.ticket 1 item.quantity %}</td>
         </tr>
       {% empty %}
         <tr>

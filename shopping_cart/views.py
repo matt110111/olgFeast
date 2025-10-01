@@ -40,29 +40,29 @@ def add_to_cart(request, **kwargs):
     
 
 
-    # check if item is user_inventory if it is update the quanity if not add item to inventory
+    # check if item is user_inventory if it is update the quantity if not add item to inventory
     if not user_inventory.item_set.filter(name=product.name):
-        item = Item(food_group=product.food_group,name=product.name,value=product.value,ticket=product.ticket,invetory=user_inventory)
+        item = Item(food_group=product.food_group,name=product.name,value=product.value,ticket=product.ticket,inventory=user_inventory)
         item.save()
     else:
         item = user_inventory.item_set.all().filter(name=product.name).get()
-        item.quanity += 1
+        item.quantity += 1
         item.save()
 
     return redirect(reverse('shop_front:shop_front-home'))
 
 
-def manipulate_quanity(request, **kwargs):
+def manipulate_quantity(request, **kwargs):
     user_inventory = get_object_or_404(Profile, user=request.user).inventory
     item_id = kwargs.get('item_id', "")
     direction = kwargs.get('direction', "")
     item = user_inventory.item_set.all().filter(id=item_id).get()
 
     if direction == 'up':
-        quanity = 1
+        quantity = 1
     else:
-        quanity = -1
-    item.quanity += quanity
+        quantity = -1
+    item.quantity += quantity
     item.save()
     return redirect(reverse('shopping_cart:order_summary'))
 
@@ -83,6 +83,7 @@ def checkout(request):
     return redirect(reverse('shopping_cart:transaction'))
 
 def success(request):
+    # Redirect to home with success message, but also provide link to order tracking
     return redirect(reverse('shop_front:shop_front-home-checkout', args="1"))
 
 def update_Transaction_history(request):
@@ -90,29 +91,60 @@ def update_Transaction_history(request):
     list_char= [letter for letter in list_char]
     ref_code = ''.join([choice(list_char) for i in range(16)])
     user_Profile = get_object_or_404(Profile, user=request.user)
-    transaction = Transaction(owner=user_Profile,ref_code=ref_code)
+    transaction = Transaction(owner=user_Profile, ref_code=ref_code, status='pending')
     transaction.save()
+    
     user_items = []
     for item in get_object_or_404(Profile, user=request.user).inventory.item_set.all():
         f_item = FoodItem.objects.filter(name=item.name).get()
-        transaction.items.add(f_item)
-        transaction.save()
-        update_quanity(quanity=item.quanity,f_item=f_item)
-        # id = Transaction.objects.raw('SELECT id FROM shopping_cart_transaction_items where fooditem_id = %s order by id desc limit 1',[f_item.id])[-1].id
-        # test = Transaction.objects.raw('update shopping_cart_transaction_items set food_quanity=%s where id=%s',[item.quanity,id])
+        # Add the item multiple times based on quantity
+        for i in range(item.quantity):
+            transaction.items.add(f_item)
+    
+    # Save to calculate totals
     transaction.save()
-    #print(Transaction.objects.filter(ref_code=ref_code).last().items.all())
+    
+    # Clear user's cart
     user_Profile.inventory.item_set.all().delete()
     return redirect(reverse('shopping_cart:success'))
 
 	#ref_code = ''.join(choice(choices) for i in range(40)) #40 Random Numbers and Letters
 
-def get_quanity(quanity=1,f_item=0):
-    with connection.cursor() as cursor:
-        pass
+# Removed get_quantity and update_quantity functions as they were causing database errors
+# The transaction process now handles quantities by adding items multiple times
 
-def update_quanity(quanity=1,f_item=0):
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT id FROM shopping_cart_transaction_items where fooditem_id = %s order by id desc limit 1", [f_item.id])
-        id = cursor.fetchone()[0]
-        cursor.execute("UPDATE shopping_cart_transaction_items SET food_quanity=%s WHERE id=%s",[quanity,id])
+def order_tracking(request):
+    """Display live order tracking page showing all recent orders"""
+    # Get recent orders (last 50)
+    recent_orders = Transaction.objects.all().order_by('-date_ordered')[:50]
+    
+    # Get orders by status using database queries
+    pending_orders = Transaction.objects.filter(status='pending').order_by('date_ordered')
+    preparing_orders = Transaction.objects.filter(status='preparing').order_by('date_ordered')
+    ready_orders = Transaction.objects.filter(status='ready').order_by('date_ordered')
+    completed_orders = Transaction.objects.filter(status='complete').order_by('-date_ordered')[:20]
+    
+    context = {
+        'recent_orders': recent_orders,
+        'pending_orders': pending_orders,
+        'preparing_orders': preparing_orders,
+        'ready_orders': ready_orders,
+        'completed_orders': completed_orders,
+        'total_orders': Transaction.objects.count(),
+    }
+    
+    return render(request, 'shopping_cart/order_tracking.html', context)
+
+def update_order_status(request, order_id, new_status):
+    """Update order status (admin only)"""
+    if not request.user.is_staff:
+        return redirect('shopping_cart:order_tracking')
+    
+    try:
+        order = Transaction.objects.get(id=order_id)
+        order.status = new_status
+        order.save()
+    except Transaction.DoesNotExist:
+        pass
+    
+    return redirect('shopping_cart:order_tracking')

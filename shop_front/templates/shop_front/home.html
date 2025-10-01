@@ -52,6 +52,12 @@
 		</div>
 	{% endfor %}
 {% if checkout == True %}
-<div class="alert">Checkout Completed</div>
+<div class="alert alert-success">
+    <strong>✅ Checkout Completed!</strong> 
+    Your order has been placed successfully. 
+    <a href="{% url 'shopping_cart:order_tracking' %}" class="btn btn-sm btn-light ml-2">
+        Track Your Order
+    </a>
+</div>
 {% endif %}
 {% endblock content %}
