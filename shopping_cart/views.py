@@ -5,12 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import connection
+from django.contrib import messages
+from shop_front.models import FoodItem
+from .models import Item, Transaction
 
 
 # Create your views here.
-
-from shop_front.models import FoodItem
-from shopping_cart.models import Item, Inventory, Transaction
 
 def get_user_pending_order(request):
     # get order for the correct user
@@ -33,43 +33,96 @@ def order_details(request, **kwargs):
 
 @login_required()
 def add_to_cart(request, **kwargs):
-    # get the user profile
-    user_inventory = get_object_or_404(Profile, user=request.user).inventory
-    # translate the item_id from request to FoodItem
-    product = FoodItem.objects.filter(id=kwargs.get('item_id', "")).get()
-    
+    try:
+        # get the user profile
+        user_inventory = get_object_or_404(Profile, user=request.user).inventory
+        
+        # translate the item_id from request to FoodItem
+        item_id = kwargs.get('item_id', "")
+        try:
+            product = FoodItem.objects.get(id=item_id)
+        except FoodItem.DoesNotExist:
+            messages.error(request, f"Item with ID {item_id} not found.")
+            return redirect(reverse('shop_front:shop_front-home'))
+        except ValueError:
+            messages.error(request, "Invalid item ID.")
+            return redirect(reverse('shop_front:shop_front-home'))
 
+        # check if item is in user_inventory - if it is update the quantity, if not add item to inventory
+        existing_item = user_inventory.item_set.filter(name=product.name).first()
+        
+        if not existing_item:
+            # Create new item in cart
+            item = Item(
+                food_group=product.food_group,
+                name=product.name,
+                value=product.value,
+                ticket=product.ticket,
+                inventory=user_inventory,
+                quantity=1
+            )
+            item.save()
+            messages.success(request, f"{product.name} added to cart!")
+        else:
+            # Update existing item quantity
+            existing_item.quantity += 1
+            existing_item.save()
+            messages.success(request, f"{product.name} quantity updated!")
 
-    # check if item is user_inventory if it is update the quantity if not add item to inventory
-    if not user_inventory.item_set.filter(name=product.name):
-        item = Item(food_group=product.food_group,name=product.name,value=product.value,ticket=product.ticket,inventory=user_inventory)
-        item.save()
-    else:
-        item = user_inventory.item_set.all().filter(name=product.name).get()
-        item.quantity += 1
-        item.save()
+    except Exception as e:
+        messages.error(request, f"Error adding item to cart: {str(e)}")
+        return redirect(reverse('shop_front:shop_front-home'))
 
     return redirect(reverse('shop_front:shop_front-home'))
 
 
 def manipulate_quantity(request, **kwargs):
-    user_inventory = get_object_or_404(Profile, user=request.user).inventory
-    item_id = kwargs.get('item_id', "")
-    direction = kwargs.get('direction', "")
-    item = user_inventory.item_set.all().filter(id=item_id).get()
+    try:
+        user_inventory = get_object_or_404(Profile, user=request.user).inventory
+        item_id = kwargs.get('item_id', "")
+        direction = kwargs.get('direction', "")
+        
+        try:
+            item = user_inventory.item_set.get(id=item_id)
+        except Item.DoesNotExist:
+            messages.error(request, "Item not found in cart.")
+            return redirect(reverse('shopping_cart:order_summary'))
 
-    if direction == 'up':
-        quantity = 1
-    else:
-        quantity = -1
-    item.quantity += quantity
-    item.save()
+        if direction == 'up':
+            quantity = 1
+        else:
+            quantity = -1
+        
+        item.quantity += quantity
+        
+        # Don't allow negative quantities
+        if item.quantity <= 0:
+            item.delete()
+            messages.success(request, f"{item.name} removed from cart.")
+        else:
+            item.save()
+            messages.success(request, f"{item.name} quantity updated.")
+            
+    except Exception as e:
+        messages.error(request, f"Error updating item quantity: {str(e)}")
+    
     return redirect(reverse('shopping_cart:order_summary'))
 
 def delete_item(request, **kwargs):
-    user_inventory = get_object_or_404(Profile, user=request.user).inventory
-    item_id = kwargs.get('item_id', "")
-    user_inventory.item_set.all().filter(id=item_id).get().delete()
+    try:
+        user_inventory = get_object_or_404(Profile, user=request.user).inventory
+        item_id = kwargs.get('item_id', "")
+        
+        try:
+            item = user_inventory.item_set.get(id=item_id)
+            item_name = item.name
+            item.delete()
+            messages.success(request, f"{item_name} removed from cart.")
+        except Item.DoesNotExist:
+            messages.error(request, "Item not found in cart.")
+            
+    except Exception as e:
+        messages.error(request, f"Error removing item: {str(e)}")
 
     return redirect(reverse('shopping_cart:order_summary'))
 
