@@ -1,0 +1,8 @@
+# Minimal requirements for olgFeast - Essential packages only
+Django==5.2.6
+django-crispy-forms==2.3
+crispy-bootstrap3==2024.1
+django-allauth==0.66.0
+Pillow==11.0.0
+requests==2.32.3
+stripe==14.15.0
