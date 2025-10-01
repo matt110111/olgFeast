@@ -114,10 +114,10 @@ else
     pip install Django==5.2.6
     pip install django-crispy-forms==2.3
     pip install crispy-bootstrap3==2024.1
-    pip install django-allauth==0.66.0
+    pip install django-allauth==0.65.11
     pip install Pillow==11.0.0
     pip install requests==2.32.3
-    pip install stripe==14.15.0
+    pip install stripe==13.1.0
     
     print_success "Manual installation completed"
 fi
