@@ -9,6 +9,15 @@ import sys
 import platform
 import subprocess
 
+def is_arch_linux():
+    """Check if running on Arch Linux"""
+    try:
+        with open("/etc/os-release", "r") as f:
+            content = f.read()
+            return "arch" in content.lower() or "manjaro" in content.lower()
+    except:
+        return False
+
 def main():
     print("🚀 olgFeast Universal Installer")
     print("===============================")
@@ -25,13 +34,26 @@ def main():
             print("❌ Windows installer failed, trying Python installer...")
             subprocess.run([sys.executable, "install.py"], check=True)
     elif system in ["linux", "darwin"]:
-        print("🐧 Detected Unix-like system (Linux/macOS)")
-        print("Running Unix installer...")
-        try:
-            subprocess.run(["bash", "install.sh"], check=True)
-        except subprocess.CalledProcessError:
-            print("❌ Unix installer failed, trying Python installer...")
-            subprocess.run([sys.executable, "install.py"], check=True)
+        if is_arch_linux():
+            print("🐧 Detected Arch Linux system")
+            print("Running Arch Linux installer...")
+            try:
+                subprocess.run(["bash", "install-arch.sh"], check=True)
+            except subprocess.CalledProcessError:
+                print("❌ Arch installer failed, trying Unix installer...")
+                try:
+                    subprocess.run(["bash", "install.sh"], check=True)
+                except subprocess.CalledProcessError:
+                    print("❌ Unix installer failed, trying Python installer...")
+                    subprocess.run([sys.executable, "install.py"], check=True)
+        else:
+            print("🐧 Detected Unix-like system (Linux/macOS)")
+            print("Running Unix installer...")
+            try:
+                subprocess.run(["bash", "install.sh"], check=True)
+            except subprocess.CalledProcessError:
+                print("❌ Unix installer failed, trying Python installer...")
+                subprocess.run([sys.executable, "install.py"], check=True)
     else:
         print(f"❓ Unknown system: {system}")
         print("Running Python installer...")

@@ -1,6 +1,6 @@
 #!/bin/bash
-# olgFeast One-Command Installation Script for Linux/macOS
-# This script installs all requirements and configurations automatically
+# olgFeast Installation Script for Arch Linux
+# Handles externally-managed-environment properly
 
 set -e  # Exit on any error
 
@@ -11,7 +11,6 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Function to print colored output
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -28,8 +27,8 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-echo "🚀 olgFeast One-Command Installation"
-echo "===================================="
+echo "🐧 olgFeast Installation for Arch Linux"
+echo "======================================"
 echo ""
 
 # Check if Python is installed
@@ -43,34 +42,28 @@ elif command -v python &> /dev/null; then
     print_success "Python $PYTHON_VERSION found"
     PYTHON_CMD="python"
 else
-    print_error "Python not found. Please install Python 3.8+ first."
-    exit 1
+    print_error "Python not found. Installing Python..."
+    sudo pacman -S python
+    PYTHON_CMD="python3"
 fi
 
-# Check Python version
-PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
-PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
-
-if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 8 ]); then
-    print_error "Python 3.8+ required. Found: $PYTHON_VERSION"
-    exit 1
-fi
-
-# Check if pip is installed
+# Install pip if not available
 print_status "Checking pip installation..."
-if command -v pip3 &> /dev/null; then
-    PIP_CMD="pip3"
-elif command -v pip &> /dev/null; then
-    PIP_CMD="pip"
-else
-    print_warning "pip not found. This is normal on Arch Linux."
-    print_status "Will use virtual environment pip instead."
-    PIP_CMD="$PYTHON_CMD -m pip"
+if ! command -v pip3 &> /dev/null && ! command -v pip &> /dev/null; then
+    print_warning "pip not found. Installing pip..."
+    sudo pacman -S python-pip
 fi
 
-# Create virtual environment first (before pip upgrade)
+# Install python-virtualenv if needed
+print_status "Checking virtualenv..."
+if ! $PYTHON_CMD -m venv --help &> /dev/null; then
+    print_warning "python-venv not available. Installing..."
+    sudo pacman -S python-virtualenv
+fi
+
+# Create virtual environment
+print_status "Creating virtual environment..."
 if [ ! -d "venv" ]; then
-    print_status "Creating virtual environment..."
     $PYTHON_CMD -m venv venv
     print_success "Virtual environment created"
 else
@@ -81,30 +74,32 @@ fi
 print_status "Activating virtual environment..."
 source venv/bin/activate
 
-# Now upgrade pip in the virtual environment
+# Upgrade pip in virtual environment
 print_status "Upgrading pip in virtual environment..."
 pip install --upgrade pip
 
+# Install requirements with fallback
+print_status "Installing Python packages..."
 
 # Function to install requirements with fallback
 install_requirements() {
     local req_file=$1
     local description=$2
     
-    print_status "Attempting $description..."
-    
-    if pip install -r "$req_file" --quiet; then
-        print_success "$description completed"
-        return 0
-    else
-        print_warning "$description failed, trying next option..."
-        return 1
+    if [ -f "$req_file" ]; then
+        print_status "Attempting $description..."
+        if pip install -r "$req_file" --quiet; then
+            print_success "$description completed"
+            return 0
+        else
+            print_warning "$description failed, trying next option..."
+            return 1
+        fi
     fi
+    return 1
 }
 
 # Try different requirement files in order
-print_status "Installing Python packages..."
-
 if install_requirements "requirements-minimal.txt" "minimal installation"; then
     print_success "Minimal installation successful"
 elif install_requirements "requirements-flexible.txt" "flexible installation"; then
@@ -137,14 +132,10 @@ pip install sqlparse==0.5.0 2>/dev/null || print_warning "sqlparse installation 
 print_status "Setting up Django..."
 
 # Make migrations
-if python manage.py makemigrations --dry-run > /dev/null 2>&1; then
-    print_status "Running migrations..."
-    python manage.py makemigrations
-    python manage.py migrate
-    print_success "Database migrations completed"
-else
-    print_status "No new migrations needed"
-fi
+print_status "Running migrations..."
+python manage.py makemigrations
+python manage.py migrate
+print_success "Database migrations completed"
 
 # Collect static files
 print_status "Collecting static files..."

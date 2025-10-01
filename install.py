@@ -68,18 +68,15 @@ def check_pip(python_cmd):
     
     success, stdout, stderr = run_command(f"{python_cmd} -m pip --version", capture_output=True)
     if not success:
-        print_warning("pip not found. Installing pip...")
-        success, _, _ = run_command(f"{python_cmd} -m ensurepip --upgrade")
-        if not success:
-            print_error("Failed to install pip")
-            sys.exit(1)
-    
-    print_success("pip is available")
+        print_warning("pip not found. This is normal on Arch Linux.")
+        print_status("Will use virtual environment pip instead.")
+    else:
+        print_success("pip is available")
 
-def upgrade_pip(python_cmd):
-    """Upgrade pip to latest version"""
-    print_status("Upgrading pip...")
-    success, _, _ = run_command(f"{python_cmd} -m pip install --upgrade pip")
+def upgrade_pip_in_venv(venv_pip):
+    """Upgrade pip in virtual environment"""
+    print_status("Upgrading pip in virtual environment...")
+    success, _, _ = run_command(f"{venv_pip} install --upgrade pip")
     if success:
         print_success("pip upgraded successfully")
     else:
@@ -263,15 +260,15 @@ def main():
     # Check pip
     check_pip(python_cmd)
     
-    # Upgrade pip
-    upgrade_pip(python_cmd)
-    
-    # Create virtual environment
+    # Create virtual environment first
     create_venv(python_cmd)
     
     # Get virtual environment commands
     venv_python = get_venv_python()
     venv_pip = get_venv_pip()
+    
+    # Upgrade pip in virtual environment
+    upgrade_pip_in_venv(venv_pip)
     
     # Install requirements
     install_requirements(venv_pip)
