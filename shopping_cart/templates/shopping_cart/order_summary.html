@@ -42,11 +42,23 @@
       <tr>
         {% if order != None %}
         <td colspan=2>
-          <strong class="pull-right">Order Total:</strong>
+          <strong class="pull-right">Order Total (Tickets):</strong>
         </td>
         
         <td colspan= 1>
-          <strong>{{ total }}</strong>
+          <strong>{{ total }} tickets</strong>
+        </td>
+        {% endif %}
+      </tr>
+      
+      <tr>
+        {% if order != None %}
+        <td colspan=2>
+          <strong class="pull-right">Total Cost:</strong>
+        </td>
+        
+        <td colspan= 1>
+          <strong>${{ total_cost }}</strong>
         </td>
         {% endif %}
       </tr>
@@ -59,7 +71,7 @@
         </td>
        <td colspan=2>
           {% if order %}
-            <a href="{% url 'shopping_cart:transaction' %}" class="pull-right btn btn-primary">Proceed To Checkout</a>
+            <a href="{% url 'shopping_cart:customer_checkout_form' %}" class="pull-right btn btn-primary">Proceed To Checkout</a>
           {% endif %}
         </td>
       </tr>

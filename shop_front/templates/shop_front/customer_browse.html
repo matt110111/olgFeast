@@ -1,0 +1,140 @@
+{% extends "shop_front/base.html" %}
+
+{% block content %}
+<div class="container-fluid px-3">
+    <!-- Header -->
+    <div class="text-center mb-4 mt-3">
+        <h1 class="display-4 text-primary">
+            <i class="fas fa-utensils"></i> Our Menu
+        </h1>
+        <p class="lead text-muted">Browse our delicious offerings</p>
+    </div>
+
+    <!-- Menu Categories -->
+    <div class="row">
+        {% for group in groups %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+            <div class="card menu-category-card h-100">
+                <div class="card-body text-center">
+                    <div class="category-icon mb-3">
+                        {% if group.food_group == 'Beverages' %}
+                            <i class="fas fa-coffee fa-3x text-primary"></i>
+                        {% elif group.food_group == 'Appetizers' %}
+                            <i class="fas fa-seedling fa-3x text-success"></i>
+                        {% elif group.food_group == 'Main Course' %}
+                            <i class="fas fa-drumstick-bite fa-3x text-warning"></i>
+                        {% elif group.food_group == 'Desserts' %}
+                            <i class="fas fa-birthday-cake fa-3x text-danger"></i>
+                        {% elif group.food_group == 'Sides' %}
+                            <i class="fas fa-french-fries fa-3x text-info"></i>
+                        {% elif group.food_group == 'Salads' %}
+                            <i class="fas fa-leaf fa-3x text-success"></i>
+                        {% else %}
+                            <i class="fas fa-utensils fa-3x text-secondary"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="card-title">{{ group.food_group }}</h5>
+                    <a href="{% url 'shop_front:customer-detail' group=group.food_group %}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye"></i> View Items
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <h4>No menu items available at the moment</h4>
+                <p>Please check back later!</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Info Notice -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="alert alert-light border-info">
+                <div class="text-center">
+                    <h5><i class="fas fa-info-circle text-info"></i> Menu Information</h5>
+                    <p class="mb-0">
+                        This is a view-only menu for browsing our offerings. 
+                        Prices are shown in tickets. To place orders, please visit our ordering station.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.menu-category-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 15px;
+}
+
+.menu-category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.category-icon {
+    opacity: 0.8;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.btn-outline-primary {
+    border-radius: 25px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+}
+
+.display-4 {
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.alert-light {
+    background-color: #f8f9fa;
+    border-left: 4px solid #17a2b8;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .menu-category-card {
+        margin-bottom: 1rem;
+    }
+    
+    .fa-3x {
+        font-size: 2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .lead {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock content %}

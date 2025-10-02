@@ -1,0 +1,187 @@
+{% extends "shop_front/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-5">
+                <h1><i class="fas fa-tv"></i> Kitchen Station Displays</h1>
+                <p class="lead">Choose a station display to view orders for that kitchen area</p>
+            </div>
+
+            <div class="row">
+                <!-- Pending Orders Station -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card station-card pending-card h-100">
+                        <div class="card-body text-center">
+                            <div class="station-icon mb-3">
+                                <i class="fas fa-clock fa-3x text-warning"></i>
+                            </div>
+                            <h3 class="card-title">Pending Orders</h3>
+                            <p class="card-text">Display new orders waiting to be prepared</p>
+                            <div class="order-count mb-3">
+                                <span class="badge badge-warning badge-lg">
+                                    {{ pending_count }} Orders
+                                </span>
+                            </div>
+                            <a href="{% url 'operations:station_display' 'pending' %}" 
+                               class="btn btn-warning btn-lg" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> Open Display
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preparing Orders Station -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card station-card preparing-card h-100">
+                        <div class="card-body text-center">
+                            <div class="station-icon mb-3">
+                                <i class="fas fa-utensils fa-3x text-info"></i>
+                            </div>
+                            <h3 class="card-title">Preparing Orders</h3>
+                            <p class="card-text">Display orders currently being prepared</p>
+                            <div class="order-count mb-3">
+                                <span class="badge badge-info badge-lg">
+                                    {{ preparing_count }} Orders
+                                </span>
+                            </div>
+                            <a href="{% url 'operations:station_display' 'preparing' %}" 
+                               class="btn btn-info btn-lg" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> Open Display
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ready Orders Station -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card station-card ready-card h-100">
+                        <div class="card-body text-center">
+                            <div class="station-icon mb-3">
+                                <i class="fas fa-check-circle fa-3x text-success"></i>
+                            </div>
+                            <h3 class="card-title">Ready Orders</h3>
+                            <p class="card-text">Display orders ready for customer pickup</p>
+                            <div class="order-count mb-3">
+                                <span class="badge badge-success badge-lg">
+                                    {{ ready_count }} Orders
+                                </span>
+                            </div>
+                            <a href="{% url 'operations:station_display' 'ready' %}" 
+                               class="btn btn-success btn-lg" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> Open Display
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-info-circle"></i> Station Display Instructions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-tv"></i> Display Setup:</h6>
+                                    <ul>
+                                        <li>Open the station display in a new tab/window</li>
+                                        <li>Press F11 for fullscreen mode</li>
+                                        <li>Position the display where kitchen staff can see it</li>
+                                        <li>Displays auto-refresh every 10 seconds</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-users"></i> Customer Experience:</h6>
+                                    <ul>
+                                        <li>Customers enter their name at checkout</li>
+                                        <li>Names are displayed on the kitchen screens</li>
+                                        <li>Customers can track orders by name</li>
+                                        <li>Orders show reference codes for tracking</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a href="{% url 'operations:admin_dashboard' %}" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i> Analytics Dashboard
+                    </a>
+                    <a href="{% url 'operations:order_tracking' %}" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> Order Management
+                    </a>
+                    <a href="{% url 'shop_front:shop_front-home' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-home"></i> Back to Shop
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.station-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.station-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.pending-card {
+    border-left: 5px solid #ffc107;
+}
+
+.preparing-card {
+    border-left: 5px solid #17a2b8;
+}
+
+.ready-card {
+    border-left: 5px solid #28a745;
+}
+
+.badge-lg {
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+}
+
+.station-icon {
+    margin-bottom: 1rem;
+}
+
+.btn-lg {
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-header h5 {
+    margin: 0;
+    color: #495057;
+}
+
+ul {
+    margin-bottom: 0;
+}
+
+ul li {
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock content %}

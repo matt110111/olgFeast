@@ -1,6 +1,7 @@
 {% extends "shop_front/base.html" %}
 
 {% block content %}
+{% csrf_token %}
 <style>
 .card {
 
@@ -35,6 +36,15 @@ button:last-child{
 
 }
 
+.admin-controls {
+	margin-top: 10px;
+}
+
+.admin-controls .btn {
+	margin-right: 5px;
+	margin-bottom: 5px;
+}
+
 </style>
 <a>{{ group }}</a>
 <div class="row">
@@ -44,10 +54,24 @@ button:last-child{
 	   <div class="card">
 	      <div class="container_">
 	      	<h6><b>{{ food.name }}</b></h6> 
-	      	<h6><b>{{ food.id }}</b></h6> 
+	      	{% if user.is_superuser %}
+	      	<h6><b>Price: ${{ food.value }}</b></h6>
+	      	{% endif %}
+	      	<h6><b>Tickets: {{ food.ticket }}</b></h6>
 	      </div>
 	  </div>
 	  </a>
+	  
+	  {% if user.is_superuser %}
+	  <div class="admin-controls mt-2">
+	  	<a href="{% url 'shop_front:item-update' food.id %}" class="btn btn-sm btn-warning">
+	  		<i class="fas fa-edit"></i> Edit
+	  	</a>
+	  	<button class="btn btn-sm btn-danger" onclick="deleteItem({{ food.id }}, '{{ food.name }}')">
+	  		<i class="fas fa-trash"></i> Delete
+	  	</button>
+	  </div>
+	  {% endif %}
 
 	      <!-- if last column in row -->
 </div>
@@ -55,8 +79,34 @@ button:last-child{
 <div class="container__ fixed-bottom">
 		<button class="btn btn-primary" onclick="location.href='{% url 'shop_front:shop_front-home' %}'">Back</button>
 		<button class="btn btn-primary" onclick="location.href='{% url 'shopping_cart:order_summary' %}'">Order_Summary</button>
+		
+		{% if user.is_superuser %}
+		<a href="{% url 'shop_front:item-create' %}" class="btn btn-success">
+			<i class="fas fa-plus"></i> Add New Item
+		</a>
+		{% endif %}
 	</div>
 
-
+<script>
+function deleteItem(itemId, itemName) {
+	if (confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) {
+		// Create a form to submit the delete request
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = `/shop/item/${itemId}/delete/`;
+		
+		// Add CSRF token
+		const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+		const csrfInput = document.createElement('input');
+		csrfInput.type = 'hidden';
+		csrfInput.name = 'csrfmiddlewaretoken';
+		csrfInput.value = csrfToken;
+		form.appendChild(csrfInput);
+		
+		document.body.appendChild(form);
+		form.submit();
+	}
+}
+</script>
 
 {% endblock content %}

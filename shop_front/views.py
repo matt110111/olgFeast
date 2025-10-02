@@ -1,5 +1,7 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib import messages
 from django.views.generic import (
 	CreateView,
 	DetailView,
@@ -40,3 +42,36 @@ class ItemCreateView(CreateView):
 class ItemUpdateView(UpdateView):
 	model = FoodItem
 	fields = ['food_group','name','value','ticket']
+
+def delete_item(request, pk):
+	"""Delete a food item - admin only"""
+	if not request.user.is_superuser:
+		messages.error(request, "You don't have permission to delete items.")
+		return redirect('shop_front:shop_front-home')
+	
+	item = get_object_or_404(FoodItem, pk=pk)
+	item_name = item.name
+	item.delete()
+	messages.success(request, f"'{item_name}' has been deleted successfully.")
+	
+	# Redirect back to the food group page if possible
+	return redirect('shop_front:shop_front-home')
+
+def customer_browse(request):
+    """Customer view for browsing items (no purchase functionality)"""
+    groups = FoodItem.objects.order_by().values('food_group').distinct()
+    context = {
+        'groups': groups,
+        'is_customer_view': True,
+    }
+    return render(request, 'shop_front/customer_browse.html', context)
+
+def customer_detail(request, group):
+    """Customer view for item details (no purchase functionality)"""
+    items_to_return = FoodItem.objects.filter(food_group=group)
+    context = {
+        'items': items_to_return,
+        'group': group,
+        'is_customer_view': True,
+    }
+    return render(request, 'shop_front/customer_detail.html', context)

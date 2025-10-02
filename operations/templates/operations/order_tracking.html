@@ -234,7 +234,7 @@
             <h4>⏳ Pending ({{ pending_orders.count }})</h4>
             {% for order in pending_orders %}
             {% if user.is_staff %}
-            <a href="{% url 'shopping_cart:update_order_status' order.id 'preparing' %}" style="text-decoration: none; color: inherit;">
+            <a href="{% url 'operations:update_order_status' order.id 'preparing' %}" style="text-decoration: none; color: inherit;">
             {% endif %}
             <div class="column-order-card {% if user.is_staff %}clickable{% endif %}">
                 <div class="order-meta">
@@ -250,7 +250,7 @@
                 </div>
                 <div class="order-meta">
                     <small>{{ order.date_ordered|date:"M d, Y H:i" }}</small>
-                    <small>{{ order.owner.user.username }}</small>
+                    <small>{{ order.customer_name|default:order.owner.user.username }}</small>
                 </div>
                 {% if user.is_staff %}
                 <div class="admin-controls">
@@ -273,7 +273,7 @@
             <h4>👨‍🍳 Preparing ({{ preparing_orders.count }})</h4>
             {% for order in preparing_orders %}
             {% if user.is_staff %}
-            <a href="{% url 'shopping_cart:update_order_status' order.id 'ready' %}" style="text-decoration: none; color: inherit;">
+            <a href="{% url 'operations:update_order_status' order.id 'ready' %}" style="text-decoration: none; color: inherit;">
             {% endif %}
             <div class="column-order-card {% if user.is_staff %}clickable{% endif %}">
                 <div class="order-meta">
@@ -289,7 +289,7 @@
                 </div>
                 <div class="order-meta">
                     <small>{{ order.date_ordered|date:"M d, Y H:i" }}</small>
-                    <small>{{ order.owner.user.username }}</small>
+                    <small>{{ order.customer_name|default:order.owner.user.username }}</small>
                 </div>
                 {% if user.is_staff %}
                 <div class="admin-controls">
@@ -312,7 +312,7 @@
             <h4>✅ Ready ({{ ready_orders.count }})</h4>
             {% for order in ready_orders %}
             {% if user.is_staff %}
-            <a href="{% url 'shopping_cart:update_order_status' order.id 'complete' %}" style="text-decoration: none; color: inherit;">
+            <a href="{% url 'operations:update_order_status' order.id 'complete' %}" style="text-decoration: none; color: inherit;">
             {% endif %}
             <div class="column-order-card {% if user.is_staff %}clickable{% endif %}">
                 <div class="order-meta">
@@ -328,7 +328,7 @@
                 </div>
                 <div class="order-meta">
                     <small>{{ order.date_ordered|date:"M d, Y H:i" }}</small>
-                    <small>{{ order.owner.user.username }}</small>
+                    <small>{{ order.customer_name|default:order.owner.user.username }}</small>
                 </div>
                 {% if user.is_staff %}
                 <div class="admin-controls">
@@ -370,7 +370,7 @@
                 </div>
                 <div class="order-meta">
                     <small>{{ order.date_ordered|date:"M d, Y H:i" }}</small>
-                    <small>{{ order.owner.user.username }}</small>
+                    <small>{{ order.customer_name|default:order.owner.user.username }}</small>
                 </div>
                 <div class="admin-controls">
                     <small style="color: #6c757d;">Order completed</small>

@@ -38,12 +38,14 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'shop_front.apps.ShopFrontConfig',
     'shopping_cart.apps.ShoppingCartConfig',
+    'operations.apps.OperationsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -75,6 +77,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'olgFeast.wsgi.application'
+ASGI_APPLICATION = 'olgFeast.asgi.application'
 
 
 # Database
@@ -149,3 +152,13 @@ CSRF_COOKIE_HTTPONLY = False
 
 # Static files settings
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+# Channels configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}

@@ -1,11 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import Profile
 from random import choice
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.db import connection
 from django.contrib import messages
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from shop_front.models import FoodItem
 from .models import Item, Transaction
 
@@ -14,20 +14,29 @@ from .models import Item, Transaction
 
 def get_user_pending_order(request):
     # get order for the correct user
-
+    if not request.user.is_authenticated:
+        return []
+    
     user_inventory = get_object_or_404(Profile, user=request.user).inventory
     if user_inventory:
         # get the only order in the list of filtered orders
         return user_inventory.item_set.all()
-    return 0
-
+    return []
+    
 def order_details(request, **kwargs):
     existing_order = get_user_pending_order(request)
 
-    total = 0
+    # Calculate total tickets and total cost
+    total_tickets = 0
+    total_cost = 0
+    for item in existing_order:
+        total_tickets += item.ticket * item.quantity
+        total_cost += item.value * item.quantity
+
     context = {
         'order': existing_order,
-        'total': total
+        'total': total_tickets,
+        'total_cost': round(total_cost, 2)
     }
     return render(request, 'shopping_cart/order_summary.html', context)
 
@@ -144,8 +153,19 @@ def update_Transaction_history(request):
     list_char= [letter for letter in list_char]
     ref_code = ''.join([choice(list_char) for i in range(16)])
     user_Profile = get_object_or_404(Profile, user=request.user)
-    transaction = Transaction(owner=user_Profile, ref_code=ref_code, status='pending')
+    
+    # Get customer name from session
+    customer_name = request.session.get('customer_name', '')
+    if not customer_name:
+        # Fallback to username if no customer name provided
+        customer_name = request.user.username
+    
+    transaction = Transaction(owner=user_Profile, ref_code=ref_code, customer_name=customer_name, status='pending')
     transaction.save()
+    
+    # Clear the customer name from session
+    if 'customer_name' in request.session:
+        del request.session['customer_name']
     
     user_items = []
     for item in get_object_or_404(Profile, user=request.user).inventory.item_set.all():
@@ -157,47 +177,81 @@ def update_Transaction_history(request):
     # Save to calculate totals
     transaction.save()
     
+    # Send WebSocket notification for new order
+    send_new_order_notification(transaction)
+    
     # Clear user's cart
     user_Profile.inventory.item_set.all().delete()
     return redirect(reverse('shopping_cart:success'))
 
-	#ref_code = ''.join(choice(choices) for i in range(40)) #40 Random Numbers and Letters
-
 # Removed get_quantity and update_quantity functions as they were causing database errors
 # The transaction process now handles quantities by adding items multiple times
 
-def order_tracking(request):
-    """Display live order tracking page showing all recent orders"""
-    # Get recent orders (last 50)
-    recent_orders = Transaction.objects.all().order_by('-date_ordered')[:50]
+def customer_checkout_form(request):
+    """Display customer name input form before checkout"""
+    if not request.user.is_authenticated:
+        return redirect('login')
     
-    # Get orders by status using database queries
-    pending_orders = Transaction.objects.filter(status='pending').order_by('date_ordered')
-    preparing_orders = Transaction.objects.filter(status='preparing').order_by('date_ordered')
-    ready_orders = Transaction.objects.filter(status='ready').order_by('date_ordered')
-    completed_orders = Transaction.objects.filter(status='complete').order_by('-date_ordered')[:20]
+    # Get user's pending order
+    existing_order = get_user_pending_order(request)
+    
+    if not existing_order:
+        messages.info(request, "Your cart is empty. Add some items before checkout.")
+        return redirect('shop_front:shop_front-home')
+    
+    if request.method == 'POST':
+        customer_name = request.POST.get('customer_name', '').strip()
+        if customer_name:
+            # Store the customer name in session for checkout
+            request.session['customer_name'] = customer_name
+            return redirect('shopping_cart:transaction')
+        else:
+            messages.error(request, "Please enter your name for the order.")
     
     context = {
-        'recent_orders': recent_orders,
-        'pending_orders': pending_orders,
-        'preparing_orders': preparing_orders,
-        'ready_orders': ready_orders,
-        'completed_orders': completed_orders,
-        'total_orders': Transaction.objects.count(),
+        'order': existing_order,
+        'total': sum(item.ticket * item.quantity for item in existing_order)
     }
     
-    return render(request, 'shopping_cart/order_tracking.html', context)
+    return render(request, 'shopping_cart/customer_checkout_form.html', context)
 
-def update_order_status(request, order_id, new_status):
-    """Update order status (admin only)"""
-    if not request.user.is_staff:
-        return redirect('shopping_cart:order_tracking')
-    
+
+def send_new_order_notification(transaction):
+    """Send WebSocket notification for new orders"""
     try:
-        order = Transaction.objects.get(id=order_id)
-        order.status = new_status
-        order.save()
-    except Transaction.DoesNotExist:
+        channel_layer = get_channel_layer()
+        
+        # Prepare order data
+        order_data = {
+            'id': transaction.id,
+            'ref_code': transaction.ref_code,
+            'customer_name': transaction.customer_name or transaction.owner.user.username,
+            'date_ordered': transaction.date_ordered.isoformat(),
+            'status': transaction.status,
+            'items': [
+                {
+                    'name': item.name,
+                    'ticket': item.ticket,
+                    'value': float(item.value)
+                }
+                for item in transaction.items.all()
+            ],
+            'total_tickets': transaction.get_total_tickets(),
+            'total_value': float(transaction.get_total_value()),
+            'item_count': transaction.items.count()
+        }
+        
+        # Notify the pending station
+        async_to_sync(channel_layer.group_send)(
+            'kitchen_pending',
+            {
+                'type': 'order_update',
+                'order': order_data,
+                'action': 'new_order'
+            }
+        )
+    except Exception as e:
+        # WebSocket notification failed, but don't break the main functionality
+        print(f"WebSocket notification failed: {e}")
         pass
-    
-    return redirect('shopping_cart:order_tracking')
+
