@@ -123,7 +123,7 @@ def setup_database():
         print("   You can change them later through the admin panel.")
         
         # Save credentials to file
-        credentials_file = Path("deployment_credentials.txt")
+        credentials_file = Path("/app/logs/deployment_credentials.txt")
         with open(credentials_file, "w") as f:
             f.write("OlgFeast Deployment Credentials\n")
             f.write("=" * 40 + "\n\n")

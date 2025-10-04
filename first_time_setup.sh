@@ -159,9 +159,20 @@ setup_database() {
     
     # Setup database schema and initial data
     print_status "Initializing database with schema and sample data..."
-    docker-compose -f docker-compose.yml --env-file docker.env exec backend python setup_database.py
-    
-    print_success "Database setup completed"
+    if docker-compose -f docker-compose.yml --env-file docker.env exec backend python setup_database.py; then
+        print_success "Database setup completed"
+        
+        # Copy credentials file from container to host
+        if docker-compose -f docker-compose.yml --env-file docker.env cp backend:/app/logs/deployment_credentials.txt ./deployment_credentials.txt 2>/dev/null; then
+            print_success "Credentials saved to: deployment_credentials.txt"
+            print_warning "Please delete this file after noting the credentials!"
+        else
+            print_warning "Could not copy credentials file, but database setup was successful"
+        fi
+    else
+        print_error "Database setup failed"
+        exit 1
+    fi
 }
 
 # Build and start application
