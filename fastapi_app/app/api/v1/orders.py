@@ -69,23 +69,8 @@ def create_order(
     db.commit()
     db.refresh(order)
     
-    # Send WebSocket notification for new order
-    try:
-        from ...websocket.websocket_service import WebSocketService
-        websocket_service = WebSocketService(db)
-        
-        # Broadcast the new order
-        import asyncio
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.create_task(websocket_service.broadcast_new_order(order))
-            else:
-                loop.run_until_complete(websocket_service.broadcast_new_order(order))
-        except Exception as e:
-            print(f"⚠️ Failed to broadcast new order: {e}")
-    except ImportError as e:
-        print(f"⚠️ WebSocket service not available: {e}")
+    # TODO: WebSocket broadcasting temporarily disabled to fix event loop issues
+    print(f"📢 New order created: {order.ref_code} - WebSocket broadcasting will be re-enabled")
     
     return order
 
@@ -220,23 +205,8 @@ def update_order_status(
     db.commit()
     db.refresh(order)
     
-    # Send WebSocket notification for status change
-    try:
-        from ...websocket.websocket_service import WebSocketService
-        websocket_service = WebSocketService(db)
-        
-        # Broadcast the status change
-        import asyncio
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.create_task(websocket_service.broadcast_order_status_change(order, old_status, order.status))
-            else:
-                loop.run_until_complete(websocket_service.broadcast_order_status_change(order, old_status, order.status))
-        except Exception as e:
-            print(f"⚠️ Failed to broadcast status change: {e}")
-    except ImportError as e:
-        print(f"⚠️ WebSocket service not available: {e}")
+    # TODO: WebSocket broadcasting temporarily disabled to fix event loop issues
+    print(f"📢 Order {order.ref_code} status changed: {old_status.value} → {order.status.value} - WebSocket broadcasting will be re-enabled")
     
     return order
 
