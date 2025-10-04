@@ -58,10 +58,10 @@ fi
 
 # Build and start services in development mode
 print_status "Building development Docker images..."
-docker-compose -f docker-compose.yml -f docker-compose.override.yml build
+docker-compose -f docker-compose.yml -f docker-compose.override.yml --env-file docker.env build
 
 print_status "Starting development services..."
-docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d db redis
+docker-compose -f docker-compose.yml -f docker-compose.override.yml --env-file docker.env up -d db redis
 
 # Wait for database and Redis to be ready
 print_status "Waiting for database and Redis to start..."
@@ -69,11 +69,11 @@ sleep 15
 
 # Start backend with hot reload
 print_status "Starting backend with hot reload..."
-docker-compose -f docker-compose.yml -f docker-compose.override.yml up backend &
+docker-compose -f docker-compose.yml -f docker-compose.override.yml --env-file docker.env up backend &
 
 # Start frontend with hot reload
 print_status "Starting frontend with hot reload..."
-docker-compose -f docker-compose.yml -f docker-compose.override.yml up frontend &
+docker-compose -f docker-compose.yml -f docker-compose.override.yml --env-file docker.env up frontend &
 
 # Wait for services to start
 sleep 10
@@ -94,4 +94,4 @@ print_warning "Files are mounted for hot reloading. Changes will be reflected au
 
 # Keep script running and show logs
 echo "Press Ctrl+C to stop all services..."
-docker-compose -f docker-compose.yml -f docker-compose.override.yml logs -f
+docker-compose -f docker-compose.yml -f docker-compose.override.yml --env-file docker.env logs -f

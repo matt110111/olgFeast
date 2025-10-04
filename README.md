@@ -51,6 +51,8 @@ This script will:
 - Create initial admin and customer accounts
 - Start all services
 
+> 📖 **New to the project?** See [FRESH_CLONE_SETUP.md](FRESH_CLONE_SETUP.md) for detailed setup instructions and troubleshooting.
+
 ### 3. Access the Application
 
 - **Frontend**: http://localhost:3000

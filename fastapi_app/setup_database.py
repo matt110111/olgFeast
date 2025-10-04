@@ -45,13 +45,24 @@ async def seed_initial_data():
     from app.models.cart import Cart
     from app.models.order import Order, OrderItem
     
+    # Generate secure passwords
+    import secrets
+    import string
+    
+    def generate_password(length=12):
+        alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+        return ''.join(secrets.choice(alphabet) for _ in range(length))
+    
+    admin_password = generate_password()
+    customer_password = generate_password()
+    
     async with AsyncSessionLocal() as session:
         try:
             # Create admin user
             admin_user = User(
                 username="admin",
                 email="admin@olgfeast.com",
-                hashed_password=get_password_hash("admin123"),
+                hashed_password=get_password_hash(admin_password),
                 is_active=True,
                 is_staff=True
             )
@@ -69,7 +80,7 @@ async def seed_initial_data():
             customer_user = User(
                 username="customer",
                 email="customer@olgfeast.com",
-                hashed_password=get_password_hash("customer123"),
+                hashed_password=get_password_hash(customer_password),
                 is_active=True,
                 is_staff=False
             )
@@ -173,20 +184,69 @@ async def seed_initial_data():
             await session.commit()
             logger.info("✅ Initial data seeded successfully")
             
+            return admin_password, customer_password
+            
         except Exception as e:
             await session.rollback()
             logger.error(f"❌ Error seeding data: {e}")
             raise
 
+async def generate_credentials_file(admin_password, customer_password):
+    """Generate credentials file for deployment"""
+    import os
+    from datetime import datetime
+    
+    credentials_content = f"""OlgFeast Deployment Credentials
+Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Admin User:
+  Username: admin
+  Password: {admin_password}
+  Role: Staff/Admin
+
+Customer User:
+  Username: customer
+  Password: {customer_password}
+  Role: Customer
+
+⚠️  IMPORTANT SECURITY NOTES:
+1. Change these passwords immediately after first login
+2. These credentials are for initial setup only
+3. Delete this file after noting the credentials
+4. Use strong, unique passwords in production
+
+Access URLs:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/docs
+"""
+    
+    # Ensure logs directory exists
+    logs_dir = "/app/logs"
+    os.makedirs(logs_dir, exist_ok=True)
+    
+    # Write credentials file
+    credentials_file = os.path.join(logs_dir, "deployment_credentials.txt")
+    try:
+        with open(credentials_file, "w") as f:
+            f.write(credentials_content)
+        logger.info(f"✅ Credentials saved to: {credentials_file}")
+        logger.info("👤 Generated credentials:")
+        logger.info(f"   Admin: admin / {admin_password}")
+        logger.info(f"   Customer: customer / {customer_password}")
+    except Exception as e:
+        logger.error(f"❌ Could not save credentials file: {e}")
+        logger.info("👤 Demo credentials (not saved to file):")
+        logger.info("   Admin: admin / admin123")
+        logger.info("   Customer: customer / customer123")
+
 async def main():
     """Main setup function"""
     try:
         await create_tables()
-        await seed_initial_data()
+        admin_password, customer_password = await seed_initial_data()
+        await generate_credentials_file(admin_password, customer_password)
         logger.info("🎉 Database setup completed successfully!")
-        logger.info("👤 Demo credentials:")
-        logger.info("   Staff: admin / admin123")
-        logger.info("   Customer: customer / customer123")
     except Exception as e:
         logger.error(f"❌ Database setup failed: {e}")
         raise
