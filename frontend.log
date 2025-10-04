@@ -1680,3 +1680,1049 @@ src/components/Kitchen/KitchenDisplay.tsx
 
 webpack compiled with 1 warning
 No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+Compiling...
+ERROR in src/contexts/ThemeContext.tsx
+TS1208: 'ThemeContext.tsx' cannot be compiled under '--isolatedModules' because it is considered a global script file. Add an import, export, or an empty 'export {}' statement to make it a module.
+
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+Compiling...
+ERROR in src/components/ThemeToggle.tsx
+TS1208: 'ThemeToggle.tsx' cannot be compiled under '--isolatedModules' because it is considered a global script file. Add an import, export, or an empty 'export {}' statement to make it a module.
+
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Layout/Header.tsx
+  Line 5:8:  'ThemeToggle' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Layout/Header.tsx
+  Line 5:8:  'ThemeToggle' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Layout/Header.tsx
+  Line 5:8:  'ThemeToggle' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Layout/Header.tsx
+  Line 5:8:  'ThemeToggle' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Layout/Header.tsx
+  Line 5:8:  'ThemeToggle' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Layout/Header.tsx
+  Line 5:8:  'ThemeToggle' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 4:10:  'ThemeProvider' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 4:10:  'ThemeProvider' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/App.tsx
+Syntax error: Unexpected token. Did you mean `{'}'}` or `&rbrace;`? (193:undefined)
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+ERROR in ./src/App.tsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /home/utah/Desktop/olgFeast/frontend/src/App.tsx: Unterminated JSX contents. (191:19)
+
+  189 |         </Routes>
+  190 |       </Router>
+> 191 |     </AuthProvider>
+      |                    ^
+  192 |   );
+  193 | }
+  194 |
+    at constructor (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at TypeScriptParserMixin.raise (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at TypeScriptParserMixin.jsxReadToken (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:4481:20)
+    at TypeScriptParserMixin.getTokenFromCode (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:4807:12)
+    at TypeScriptParserMixin.getTokenFromCode (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10009:11)
+    at TypeScriptParserMixin.nextToken (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:5813:10)
+    at TypeScriptParserMixin.next (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:5723:10)
+    at TypeScriptParserMixin.eat (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:5727:12)
+    at TypeScriptParserMixin.expect (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:6929:15)
+    at TypeScriptParserMixin.jsxParseClosingElementAt (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:4713:10)
+    at TypeScriptParserMixin.jsxParseElementAt (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:4728:37)
+    at TypeScriptParserMixin.jsxParseElementAt (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at TypeScriptParserMixin.jsxParseElement (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at TypeScriptParserMixin.parseExprAtom (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at TypeScriptParserMixin.parseExprSubscripts (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at TypeScriptParserMixin.parseUpdate (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:9857:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at TypeScriptParserMixin.parseExprOps (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:9795:39
+    at TypeScriptParserMixin.tryParse (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at TypeScriptParserMixin.parseMaybeAssign (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:9795:18)
+    at /home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at TypeScriptParserMixin.allowInAnd (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at TypeScriptParserMixin.parseMaybeAssignAllowIn (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at TypeScriptParserMixin.parseParenAndDistinguishExpression (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at TypeScriptParserMixin.parseExprAtom (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at TypeScriptParserMixin.parseExprAtom (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at TypeScriptParserMixin.parseExprSubscripts (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at TypeScriptParserMixin.parseUpdate (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at TypeScriptParserMixin.parseMaybeUnary (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at TypeScriptParserMixin.parseMaybeUnary (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:9857:18)
+    at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at TypeScriptParserMixin.parseExprOps (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at TypeScriptParserMixin.parseMaybeConditional (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at TypeScriptParserMixin.parseMaybeAssign (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at TypeScriptParserMixin.parseMaybeAssign (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:9806:20)
+    at TypeScriptParserMixin.parseExpressionBase (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at TypeScriptParserMixin.allowInAnd (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at TypeScriptParserMixin.parseExpression (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at TypeScriptParserMixin.parseReturnStatement (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:13151:28)
+    at TypeScriptParserMixin.parseStatementContent (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:12807:21)
+    at TypeScriptParserMixin.parseStatementContent (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:9532:18)
+    at TypeScriptParserMixin.parseStatementLike (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at TypeScriptParserMixin.parseStatementListItem (/home/utah/Desktop/olgFeast/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+
+ERROR in [eslint] 
+src/App.tsx
+  Line 193:  Parsing error: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+webpack compiled with 2 errors and 1 warning
+ERROR in src/App.test.tsx:4:8
+TS1192: Module '"/home/utah/Desktop/olgFeast/frontend/src/App"' has no default export.
+    2 | import { render, screen } from '@testing-library/react';
+    3 | import { MemoryRouter } from 'react-router-dom';
+  > 4 | import App from './App';
+      |        ^^^
+    5 |
+    6 | test('renders app without crashing', () => {
+    7 |   render(
+
+ERROR in src/App.tsx
+TS1005: '</' expected.
+
+ERROR in src/App.tsx:118:6
+TS17008: JSX element 'ThemeProvider' has no corresponding closing tag.
+    116 | function App() {
+    117 |   return (
+  > 118 |     <ThemeProvider>
+        |      ^^^^^^^^^^^^^
+    119 |       <AuthProvider>
+    120 |         <Router>
+    121 |           <Routes>
+
+ERROR in src/App.tsx:193:1
+TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+    191 |     </AuthProvider>
+    192 |   );
+  > 193 | }
+        | ^
+    194 |
+    195 | export default App;
+    196 |
+
+ERROR in src/index.tsx:4:8
+TS1192: Module '"/home/utah/Desktop/olgFeast/frontend/src/App"' has no default export.
+    2 | import ReactDOM from 'react-dom/client';
+    3 | import './index.css';
+  > 4 | import App from './App';
+      |        ^^^
+    5 | import reportWebVitals from './reportWebVitals';
+    6 |
+    7 | const root = ReactDOM.createRoot(
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Auth/LoginForm.tsx
+  Line 6:8:  'ThemeToggle' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Auth/LoginForm.tsx
+  Line 6:8:  'ThemeToggle' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/Admin/AdminDashboard.tsx
+  Line 157:6:  React Hook useCallback has a missing dependency: 'fetchData'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  Line 169:6:  React Hook useEffect has missing dependencies: 'fetchData' and 'setupWebSocket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 174:6:  React Hook useEffect has a missing dependency: 'setupWebSocket'. Either include it or remove the dependency array                    react-hooks/exhaustive-deps
+
+src/components/Admin/OrderDetail.tsx
+  Line 9:3:   'User' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 45:7:  'OrderDetail' is already defined  @typescript-eslint/no-redeclare
+
+src/components/Checkout/CheckoutForm.tsx
+  Line 24:6:  React Hook useEffect has a missing dependency: 'fetchCart'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Kitchen/KitchenDisplay.tsx
+  Line 139:6:  React Hook useCallback has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.

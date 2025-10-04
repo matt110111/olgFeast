@@ -29,9 +29,11 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const initializeAuth = async () => {
+      // Only show loading on first load, not on subsequent navigations
       const token = localStorage.getItem('access_token');
       if (token) {
         try {
@@ -44,6 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
       setLoading(false);
+      setInitialized(true);
     };
 
     initializeAuth();
@@ -83,7 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const value: AuthContextType = {
     user,
-    loading,
+    loading: loading && !initialized, // Only show loading during initial auth check
     login,
     register,
     logout,

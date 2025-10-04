@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo, useCallback } from 'react';
 import { FoodItem, FoodItemGroup } from '../../types';
 import { apiService } from '../../services/api';
 import { ShoppingCart, DollarSign, Clock } from 'lucide-react';
 
-const MenuList: React.FC = () => {
+const MenuList: React.FC = memo(() => {
   const [foodGroups, setFoodGroups] = useState<FoodItemGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,7 +24,7 @@ const MenuList: React.FC = () => {
     }
   };
 
-  const handleAddToCart = async (foodItem: FoodItem) => {
+  const handleAddToCart = useCallback(async (foodItem: FoodItem) => {
     try {
       await apiService.addToCart({
         food_item_id: foodItem.id,
@@ -35,13 +35,13 @@ const MenuList: React.FC = () => {
     } catch (error) {
       console.error('Failed to add item to cart:', error);
     }
-  };
+  }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        <span className="sr-only">Loading...</span>
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <span className="sr-only">Loading menu...</span>
       </div>
     );
   }
@@ -119,6 +119,8 @@ const MenuList: React.FC = () => {
       ))}
     </div>
   );
-};
+});
+
+MenuList.displayName = 'MenuList';
 
 export default MenuList;

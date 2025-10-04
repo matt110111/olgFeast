@@ -1,13 +1,13 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   db:
     image: postgres:15-alpine
+    container_name: olgfeast_db
     environment:
       POSTGRES_DB: olgfeast
       POSTGRES_USER: olgfeast
-      POSTGRES_PASSWORD: olgfeast_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -17,30 +17,40 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - olgfeast_network
 
   # Redis for WebSocket channels
   redis:
     image: redis:7-alpine
+    container_name: olgfeast_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - olgfeast_network
 
   # FastAPI Backend
   backend:
     build:
       context: ./fastapi_app
       dockerfile: Dockerfile
+    container_name: olgfeast_backend
     environment:
-      DATABASE_URL: postgresql://olgfeast:olgfeast_password@db:5432/olgfeast
-      REDIS_URL: redis://redis:6379
-      SECRET_KEY: your-super-secret-key-change-in-production
-      DEBUG: "false"
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG}
+      ENVIRONMENT: ${ENVIRONMENT}
     ports:
       - "8000:8000"
     depends_on:
@@ -53,15 +63,24 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - olgfeast_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
-      - ./fastapi_app:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - ./setup_database.py:/app/setup_database.py:ro
 
   # React Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    container_name: olgfeast_frontend
     ports:
       - "3000:80"
     depends_on:
@@ -71,11 +90,22 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
+    networks:
+      - olgfeast_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
 
 networks:
-  default:
+  olgfeast_network:
+    driver: bridge
     name: olgfeast_network

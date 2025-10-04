@@ -1,0 +1,25 @@
+# Development override for docker-compose.yml
+services:
+  backend:
+    environment:
+      DEBUG: "true"
+      ENVIRONMENT: "development"
+    volumes:
+      - ./fastapi_app:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # For debugging
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    ports:
+      - "3001:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_WS_URL=ws://localhost:8000
