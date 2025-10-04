@@ -415,7 +415,7 @@ Based on performance tests:
 - **Authentication**: < 20ms
 - **Memory Usage**: < 50MB increase for 100 requests
 
-## Migration from Django
+## FastAPI Architecture
 
 This FastAPI version provides significant improvements:
 

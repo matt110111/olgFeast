@@ -9,6 +9,12 @@ jest.mock('../../../services/api', () => ({
   },
 }));
 
+// Mock react-router-dom
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => jest.fn(),
+}));
+
 describe('MenuList', () => {
   beforeEach(() => {
     jest.clearAllMocks();

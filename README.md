@@ -126,12 +126,12 @@ docker-compose down
 
 Once running, visit http://localhost:8000/docs for interactive API documentation.
 
-## 🎯 Migration from Django
+## 🎯 Key Features
 
-This FastAPI version provides:
-- **3x faster** API responses
+This FastAPI-based system provides:
+- **Lightning-fast** API responses
 - **Real-time** WebSocket communication
-- **Modern** React frontend
+- **Modern** React TypeScript frontend
 - **Type-safe** development
 - **Production-ready** deployment
 
@@ -161,8 +161,8 @@ For issues:
 
 ## 🏆 What's New
 
-### v2.0 - FastAPI Migration
-- ✅ Complete Django → FastAPI migration
+### v2.0 - FastAPI Restaurant System
+- ✅ Modern FastAPI backend with async support
 - ✅ React TypeScript frontend
 - ✅ Real-time WebSocket communication
 - ✅ Comprehensive testing suite

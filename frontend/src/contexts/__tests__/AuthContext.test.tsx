@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../AuthContext';
 
 // Mock the API service
@@ -24,11 +24,11 @@ const TestComponent = () => {
 };
 
 const TestApp = () => (
-  <BrowserRouter>
+  <MemoryRouter>
     <AuthProvider>
       <TestComponent />
     </AuthProvider>
-  </BrowserRouter>
+  </MemoryRouter>
 );
 
 describe('AuthContext', () => {

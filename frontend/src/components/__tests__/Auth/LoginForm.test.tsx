@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import LoginForm from '../../Auth/LoginForm';
 import { AuthProvider } from '../../../contexts/AuthContext';
 
@@ -12,11 +12,11 @@ jest.mock('../../../services/api', () => ({
 }));
 
 const MockedLoginForm = () => (
-  <BrowserRouter>
+  <MemoryRouter>
     <AuthProvider>
       <LoginForm />
     </AuthProvider>
-  </BrowserRouter>
+  </MemoryRouter>
 );
 
 describe('LoginForm', () => {

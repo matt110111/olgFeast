@@ -190,9 +190,9 @@ docker build -t olgfeast-api .
 docker run -p 8000:8000 olgfeast-api
 ```
 
-## 🔗 Migration from Django
+## 🔗 Modern FastAPI Architecture
 
-This FastAPI version is a complete rewrite of the Django olgFeast application, featuring:
+This FastAPI version is a modern restaurant management system, featuring:
 
 ### Improvements
 
