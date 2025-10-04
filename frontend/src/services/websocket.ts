@@ -65,47 +65,36 @@ class WebSocketService {
   }
 
   subscribe(endpoint: string, eventType: string, handler: WebSocketEventHandler) {
-    const key = `${endpoint}:${eventType}`;
-    if (!this.eventHandlers.has(key)) {
-      this.eventHandlers.set(key, new Set());
+    if (!this.eventHandlers.has(endpoint)) {
+      this.eventHandlers.set(endpoint, new Set());
     }
-    this.eventHandlers.get(key)!.add(handler);
+    this.eventHandlers.get(endpoint)!.add(handler);
 
     // Connect if not already connected
     this.connect(endpoint);
   }
 
   unsubscribe(endpoint: string, eventType: string, handler: WebSocketEventHandler) {
-    const key = `${endpoint}:${eventType}`;
-    const handlers = this.eventHandlers.get(key);
+    const handlers = this.eventHandlers.get(endpoint);
     if (handlers) {
       handlers.delete(handler);
       if (handlers.size === 0) {
-        this.eventHandlers.delete(key);
-        // Check if there are any other handlers for this endpoint
-        const hasOtherHandlers = Array.from(this.eventHandlers.keys()).some(k => k.startsWith(`${endpoint}:`));
-        if (!hasOtherHandlers) {
-          this.disconnect(endpoint);
-        }
+        this.disconnect(endpoint);
       }
     }
   }
 
   private handleMessage(endpoint: string, message: WebSocketMessage) {
-    // Call handlers for all event types for this endpoint
-    const keysToCheck = [`${endpoint}:${message.type}`, `${endpoint}:*`];
-    keysToCheck.forEach(key => {
-      const handlers = this.eventHandlers.get(key);
-      if (handlers) {
-        handlers.forEach(handler => {
-          try {
-            handler(message);
-          } catch (error) {
-            console.error('Error in WebSocket event handler:', error);
-          }
-        });
-      }
-    });
+    const handlers = this.eventHandlers.get(endpoint);
+    if (handlers) {
+      handlers.forEach(handler => {
+        try {
+          handler(message);
+        } catch (error) {
+          console.error('Error in WebSocket event handler:', error);
+        }
+      });
+    }
   }
 
   // Convenience methods for specific endpoints

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
@@ -15,6 +15,46 @@ from ...api.deps import get_current_user, get_current_staff_user
 router = APIRouter()
 
 
+def broadcast_new_order_background(message: dict):
+    """Background task to broadcast new order messages"""
+    import asyncio
+    try:
+        # Create new event loop for background task
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        async def _broadcast():
+            from ...websocket.connection_manager import manager
+            await manager.broadcast_json_to_channel(message, "kitchen_display")
+            await manager.broadcast_json_to_channel(message, "admin_dashboard")
+            print(f"📢 Broadcasted new order: {message['data']['ref_code']}")
+
+        loop.run_until_complete(_broadcast())
+        loop.close()
+    except Exception as e:
+        print(f"⚠️ Failed to broadcast new order: {e}")
+
+
+def broadcast_status_change_background(message: dict):
+    """Background task to broadcast status change messages"""
+    import asyncio
+    try:
+        # Create new event loop for background task
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        async def _broadcast():
+            from ...websocket.connection_manager import manager
+            await manager.broadcast_json_to_channel(message, "kitchen_display")
+            await manager.broadcast_json_to_channel(message, "admin_dashboard")
+            print(f"📢 Broadcasted status change: {message['data']['ref_code']} {message['data']['old_status']} → {message['data']['new_status']}")
+
+        loop.run_until_complete(_broadcast())
+        loop.close()
+    except Exception as e:
+        print(f"⚠️ Failed to broadcast status change: {e}")
+
+
 def generate_ref_code() -> str:
     """Generate a unique reference code for orders"""
     chars = string.ascii_lowercase + string.digits
@@ -24,6 +64,7 @@ def generate_ref_code() -> str:
 @router.post("/checkout", response_model=OrderSchema)
 def create_order(
     order_data: OrderCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -69,10 +110,8 @@ def create_order(
     db.commit()
     db.refresh(order)
     
-    # Send WebSocket notification for new order
+    # Schedule WebSocket broadcast for new order
     try:
-        from ...websocket.connection_manager import manager
-
         # Create new order message
         total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
         total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
@@ -91,16 +130,12 @@ def create_order(
             "timestamp": datetime.utcnow().isoformat()
         }
 
-        # Broadcast using asyncio.create_task
-        import asyncio
-        try:
-            asyncio.create_task(manager.broadcast_json_to_channel(new_order_message, "kitchen_display"))
-            asyncio.create_task(manager.broadcast_json_to_channel(new_order_message, "admin_dashboard"))
-        except Exception as e:
-            print(f"⚠️ Failed to broadcast new order: {e}")
-    except ImportError as e:
-        print(f"⚠️ WebSocket service not available: {e}")
-    
+        # Schedule background broadcast
+        background_tasks.add_task(broadcast_new_order_background, new_order_message)
+
+    except Exception as e:
+        print(f"⚠️ Failed to schedule new order broadcast: {e}")
+
     return order
 
 
@@ -194,6 +229,7 @@ def get_order(
 def update_order_status(
     order_id: int,
     order_update: OrderUpdate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_staff_user),
     db: Session = Depends(get_db)
 ):
@@ -234,10 +270,8 @@ def update_order_status(
     db.commit()
     db.refresh(order)
     
-    # Send WebSocket notification for status change
+    # Schedule WebSocket broadcast for status change
     try:
-        from ...websocket.connection_manager import manager
-
         # Create status change message
         status_change_message = {
             "type": "order_status_change",
@@ -252,15 +286,11 @@ def update_order_status(
             "timestamp": datetime.utcnow().isoformat()
         }
 
-        # Broadcast using asyncio.create_task
-        import asyncio
-        try:
-            asyncio.create_task(manager.broadcast_json_to_channel(status_change_message, "kitchen_display"))
-            asyncio.create_task(manager.broadcast_json_to_channel(status_change_message, "admin_dashboard"))
-        except Exception as e:
-            print(f"⚠️ Failed to broadcast status change: {e}")
-    except ImportError as e:
-        print(f"⚠️ WebSocket service not available: {e}")
+        # Schedule background broadcast
+        background_tasks.add_task(broadcast_status_change_background, status_change_message)
+
+    except Exception as e:
+        print(f"⚠️ Failed to schedule status change broadcast: {e}")
     
     return order
 
