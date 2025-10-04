@@ -24,7 +24,9 @@ class WebSocketService {
       return existing;
     }
 
-    const ws = new WebSocket(`ws://${window.location.hostname}:8000${endpoint}`);
+    // Use environment variable for WebSocket URL, fallback to current host
+    const wsUrl = process.env.REACT_APP_WS_URL || `ws://${window.location.hostname}:8000`;
+    const ws = new WebSocket(`${wsUrl}${endpoint}`);
     
     ws.onopen = () => {
       console.log(`✅ WebSocket connected to ${endpoint}`);
