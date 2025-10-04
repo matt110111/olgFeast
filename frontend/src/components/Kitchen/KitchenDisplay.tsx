@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { websocketService } from '../../services/websocket';
-import { KitchenUpdateMessage, OrderStatus } from '../../types';
+import { apiService } from '../../services/api';
+import { OrderStatus } from '../../types';
 import { Clock, CheckCircle, Package, Truck } from 'lucide-react';
 
 interface KitchenOrder {
@@ -11,12 +11,14 @@ interface KitchenOrder {
   date_ordered: string;
   date_preparing?: string;
   date_ready?: string;
-  items: Array<{
-    name: string;
+  order_items: Array<{
+    food_item: {
+      name: string;
+      value: number;
+      ticket: number;
+    };
     quantity: number;
   }>;
-  total_value: number;
-  total_tickets: number;
 }
 
 const KitchenDisplay: React.FC = () => {
@@ -29,33 +31,34 @@ const KitchenDisplay: React.FC = () => {
     preparing: [],
     ready: []
   });
-  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Connect to kitchen display WebSocket
-    websocketService.connectKitchenDisplay();
-    setConnected(true);
-
-    // Subscribe to kitchen updates
-    websocketService.subscribe('/ws/kitchen/display', 'kitchen_update', (message) => {
-      if (message.type === 'kitchen_update') {
-        const data = message.data as KitchenUpdateMessage;
-        setOrders({
-          pending: data.pending_orders || [],
-          preparing: data.preparing_orders || [],
-          ready: data.ready_orders || []
-        });
-      }
-    });
-
-    // Request initial update
-    websocketService.requestKitchenUpdate();
-
-    // Cleanup on unmount
-    return () => {
-      websocketService.disconnect('/ws/kitchen/display');
-    };
+    fetchOrders();
   }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const [pendingResponse, preparingResponse, readyResponse] = await Promise.all([
+        apiService.get('/operations/orders/pending'),
+        apiService.get('/operations/orders/preparing'),
+        apiService.get('/operations/orders/ready')
+      ]);
+      
+      setOrders({
+        pending: pendingResponse.data || [],
+        preparing: preparingResponse.data || [],
+        ready: readyResponse.data || []
+      });
+    } catch (error) {
+      setError('Failed to load kitchen orders');
+      console.error('Error fetching kitchen orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
@@ -79,6 +82,18 @@ const KitchenDisplay: React.FC = () => {
     });
   };
 
+  const calculateOrderTotal = (order: KitchenOrder): number => {
+    return order.order_items.reduce((total, item) => {
+      return total + (item.food_item.value * item.quantity);
+    }, 0);
+  };
+
+  const calculateTotalTickets = (order: KitchenOrder): number => {
+    return order.order_items.reduce((total, item) => {
+      return total + (item.food_item.ticket * item.quantity);
+    }, 0);
+  };
+
   const OrderCard: React.FC<{ order: KitchenOrder; status: OrderStatus }> = ({ order, status }) => (
     <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-l-primary-500">
       <div className="flex items-center justify-between mb-2">
@@ -88,24 +103,24 @@ const KitchenDisplay: React.FC = () => {
         </div>
         <div className="text-right">
           <p className="text-sm text-gray-500">{formatTime(order.date_ordered)}</p>
-          <p className="font-medium">${order.total_value.toFixed(2)}</p>
+          <p className="font-medium">${calculateOrderTotal(order).toFixed(2)}</p>
         </div>
       </div>
       
       <p className="text-sm text-gray-600 mb-3">{order.customer_name}</p>
       
       <div className="space-y-1 mb-3">
-        {order.items.map((item, index) => (
+        {order.order_items.map((item, index) => (
           <div key={index} className="flex justify-between text-sm">
-            <span>{item.name}</span>
+            <span>{item.food_item.name}</span>
             <span className="font-medium">x{item.quantity}</span>
           </div>
         ))}
       </div>
       
       <div className="flex justify-between items-center text-xs text-gray-500">
-        <span>{order.total_tickets} tickets</span>
-        <span>{order.items.length} items</span>
+        <span>{calculateTotalTickets(order)} tickets</span>
+        <span>{order.order_items.length} items</span>
       </div>
     </div>
   );
@@ -134,15 +149,45 @@ const KitchenDisplay: React.FC = () => {
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600">{error}</p>
+        <button
+          onClick={fetchOrders}
+          className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Kitchen Display</h1>
-        <div className="flex items-center space-x-2">
-          <div className={`w-3 h-3 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          <span className="text-sm text-gray-600">
-            {connected ? 'Connected' : 'Disconnected'}
-          </span>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={fetchOrders}
+            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+          >
+            Refresh
+          </button>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            <span className="text-sm text-gray-600">
+              Live Data
+            </span>
+          </div>
         </div>
       </div>
 
@@ -169,7 +214,7 @@ const KitchenDisplay: React.FC = () => {
 
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-500">
-          Real-time updates • Last updated: {new Date().toLocaleTimeString()}
+          Kitchen Display • Last updated: {new Date().toLocaleTimeString()}
         </p>
       </div>
     </div>
