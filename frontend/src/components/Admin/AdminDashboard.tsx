@@ -12,7 +12,6 @@ interface AdminOrder {
   date_preparing?: string;
   date_ready?: string;
   date_complete?: string;
-  total_value: number;
   order_items: Array<{
     food_item: {
       name: string;
@@ -90,6 +89,12 @@ const AdminDashboard: React.FC = () => {
       default:
         return null;
     }
+  };
+
+  const calculateOrderTotal = (order: AdminOrder): number => {
+    return order.order_items.reduce((total, item) => {
+      return total + (item.food_item.value * item.quantity);
+    }, 0);
   };
 
   const formatDate = (dateString: string) => {
@@ -321,7 +326,7 @@ const AdminDashboard: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${order.total_value.toFixed(2)}
+                      ${calculateOrderTotal(order).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(order.date_ordered)}
