@@ -11,6 +11,7 @@ from ...models.cart import Cart, CartItem
 from ...models.user import User
 from ...schemas.order import Order as OrderSchema, OrderCreate, OrderUpdate, OrderSummary, OrderAnalytics
 from ...api.deps import get_current_user, get_current_staff_user
+from ...services.order_service import OrderService
 
 router = APIRouter()
 
@@ -71,12 +72,6 @@ def broadcast_status_change_background(message: dict):
     thread.start()
 
 
-def generate_ref_code() -> str:
-    """Generate a unique reference code for orders"""
-    chars = string.ascii_lowercase + string.digits
-    return ''.join(secrets.choice(chars) for _ in range(16))
-
-
 @router.post("/checkout", response_model=OrderSchema)
 def create_order(
     order_data: OrderCreate,
@@ -85,73 +80,15 @@ def create_order(
     db: Session = Depends(get_db)
 ):
     """Create a new order from cart items"""
-    # Check if user has items in cart
-    cart = db.query(Cart).filter(Cart.user_id == current_user.id).first()
-    if not cart or not cart.items:
+    order_service = OrderService(db)
+    order = order_service.create_order(current_user.id, order_data)
+    
+    if not order:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cart is empty"
+            detail="Cart is empty or order creation failed"
         )
     
-    # Generate unique reference code
-    ref_code = generate_ref_code()
-    while db.query(Order).filter(Order.ref_code == ref_code).first():
-        ref_code = generate_ref_code()
-    
-    # Create order
-    order = Order(
-        ref_code=ref_code,
-        user_id=current_user.id,
-        customer_name=order_data.customer_name,
-        status=OrderStatus.PENDING
-    )
-    db.add(order)
-    db.commit()
-    db.refresh(order)
-    
-    # Add cart items to order
-    for cart_item in cart.items:
-        # Add item multiple times based on quantity
-        for _ in range(cart_item.quantity):
-            order_item = OrderItem(
-                order_id=order.id,
-                food_item_id=cart_item.food_item_id,
-                quantity=1
-            )
-            db.add(order_item)
-    
-    # Clear the cart
-    db.query(CartItem).filter(CartItem.cart_id == cart.id).delete()
-    
-    db.commit()
-    db.refresh(order)
-    
-    # Schedule WebSocket broadcast for new order
-    try:
-        # Create new order message
-        total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
-        total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
-
-        new_order_message = {
-            "type": "new_order",
-            "data": {
-                "order_id": order.id,
-                "ref_code": order.ref_code,
-                "customer_name": order.customer_name,
-                "total_value": total_value,
-                "total_tickets": total_tickets,
-                "item_count": len(order.order_items),
-                "timestamp": datetime.utcnow().isoformat()
-            },
-            "timestamp": datetime.utcnow().isoformat()
-        }
-
-        # Schedule background broadcast
-        background_tasks.add_task(broadcast_new_order_background, new_order_message)
-
-    except Exception as e:
-        print(f"⚠️ Failed to schedule new order broadcast: {e}")
-
     return order
 
 
@@ -174,6 +111,7 @@ def get_my_orders(
         
         result.append(OrderSummary(
             id=order.id,
+            display_id=order.display_id,
             ref_code=order.ref_code,
             customer_name=order.customer_name,
             status=order.status.value,

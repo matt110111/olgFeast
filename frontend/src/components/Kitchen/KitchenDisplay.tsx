@@ -3,9 +3,11 @@ import { apiService } from '../../services/api';
 import { websocketService } from '../../services/websocket';
 import { OrderStatus } from '../../types';
 import { Clock, CheckCircle, Package, Truck } from 'lucide-react';
+import WebSocketStatus from '../WebSocketStatus';
 
 interface KitchenOrder {
   id: number;
+  display_id: number;
   ref_code: string;
   customer_name: string;
   status: OrderStatus;
@@ -38,6 +40,16 @@ const KitchenDisplay: React.FC = () => {
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
+      setError('');
+      
+      // Check if we have a valid token
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in.');
+      }
+      
+      console.log('Fetching kitchen orders with token:', token ? 'Present' : 'Missing');
+      
       const [pendingResponse, preparingResponse, readyResponse] = await Promise.all([
         apiService.get('/operations/orders/pending'),
         apiService.get('/operations/orders/preparing'),
@@ -49,49 +61,82 @@ const KitchenDisplay: React.FC = () => {
         preparing: preparingResponse.data || [],
         ready: readyResponse.data || []
       });
-    } catch (error) {
-      setError('Failed to load kitchen orders');
+    } catch (error: any) {
       console.error('Error fetching kitchen orders:', error);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        setError('Authentication failed. Please log in again.');
+      } else if (error.response?.status === 422) {
+        setError('Invalid request. Please ensure you are logged in as a staff member.');
+      } else {
+        setError(`Failed to load kitchen orders: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
   const setupWebSocket = useCallback(() => {
-    // Connect to kitchen display WebSocket
-    websocketService.connectKitchenDisplay();
-
-    // Subscribe to kitchen updates
-    websocketService.subscribe('/ws/kitchen/display', 'kitchen_update', (message) => {
-      if (message.type === 'kitchen_update') {
-        const data = message.data;
-        setOrders({
-          pending: data.pending_orders || [],
-          preparing: data.preparing_orders || [],
-          ready: data.ready_orders || []
-        });
+    try {
+      // Connect to kitchen display WebSocket
+      const ws = websocketService.connectKitchenDisplay();
+      
+      if (!ws) {
+        console.error('Failed to connect to kitchen WebSocket');
+        return;
       }
-    });
 
-    // Subscribe to order status changes
-    websocketService.subscribe('/ws/kitchen/display', 'order_status_change', (message) => {
-      if (message.type === 'order_status_change') {
-        // Refresh kitchen data when order status changes
-        fetchOrders();
-      }
-    });
+      // Subscribe to kitchen updates
+      websocketService.subscribe('/ws/kitchen/display', 'kitchen_update', (message) => {
+        try {
+          if (message.type === 'kitchen_update' && message.data) {
+            setOrders({
+              pending: message.data.pending_orders || [],
+              preparing: message.data.preparing_orders || [],
+              ready: message.data.ready_orders || []
+            });
+          }
+        } catch (error) {
+          console.error('Error processing kitchen update:', error);
+          // Fallback to REST API
+          fetchOrders();
+        }
+      });
 
-    // Subscribe to new orders
-    websocketService.subscribe('/ws/kitchen/display', 'new_order', (message) => {
-      if (message.type === 'new_order') {
-        // Refresh kitchen data when new order is created
-        fetchOrders();
-      }
-    });
+      // Subscribe to order status changes
+      websocketService.subscribe('/ws/kitchen/display', 'order_status_change', (message) => {
+        try {
+          if (message.type === 'order_status_change') {
+            // Request updated kitchen state instead of full refresh
+            websocketService.requestKitchenUpdate();
+          }
+        } catch (error) {
+          console.error('Error processing order status change:', error);
+          fetchOrders();
+        }
+      });
 
-    // Request initial update via WebSocket
-    websocketService.requestKitchenUpdate();
-  }, [fetchOrders]);
+      // Subscribe to new orders
+      websocketService.subscribe('/ws/kitchen/display', 'new_order', (message) => {
+        try {
+          if (message.type === 'new_order') {
+            // Request updated kitchen state instead of full refresh
+            websocketService.requestKitchenUpdate();
+          }
+        } catch (error) {
+          console.error('Error processing new order:', error);
+          fetchOrders();
+        }
+      });
+
+      // Request initial update via WebSocket
+      websocketService.requestKitchenUpdate();
+      
+    } catch (error) {
+      console.error('Failed to setup WebSocket:', error);
+      // Fallback to REST API only
+      fetchOrders();
+    }
+  }, []); // Remove fetchOrders dependency to prevent infinite re-renders
 
   useEffect(() => {
     // Initial data fetch
@@ -129,12 +174,18 @@ const KitchenDisplay: React.FC = () => {
   };
 
   const calculateOrderTotal = (order: KitchenOrder): number => {
+    if (!order.order_items || !Array.isArray(order.order_items)) {
+      return 0;
+    }
     return order.order_items.reduce((total, item) => {
       return total + (item.food_item.value * item.quantity);
     }, 0);
   };
 
   const calculateTotalTickets = (order: KitchenOrder): number => {
+    if (!order.order_items || !Array.isArray(order.order_items)) {
+      return 0;
+    }
     return order.order_items.reduce((total, item) => {
       return total + (item.food_item.ticket * item.quantity);
     }, 0);
@@ -146,7 +197,8 @@ const KitchenDisplay: React.FC = () => {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
             {getStatusIcon(status)}
-            <span className="font-semibold text-lg">#{order.ref_code}</span>
+            <span className="text-lg font-semibold text-gray-800 mb-3">{order.customer_name}</span>
+
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-500">{formatTime(order.date_ordered)}</p>
@@ -154,10 +206,10 @@ const KitchenDisplay: React.FC = () => {
           </div>
         </div>
         
-        <p className="text-sm text-gray-600 mb-3">{order.customer_name}</p>
+        <p className="font-semibold text-sm">#{order.display_id}</p>
         
         <div className="space-y-1 mb-3">
-          {order.order_items.map((item, index) => (
+          {(order.order_items || []).map((item, index) => (
             <div key={index} className="flex justify-between text-sm">
               <span>{item.food_item.name}</span>
               <span className="font-medium">x{item.quantity}</span>
@@ -167,7 +219,7 @@ const KitchenDisplay: React.FC = () => {
         
         <div className="flex justify-between items-center text-xs text-gray-500">
           <span>{calculateTotalTickets(order)} tickets</span>
-          <span>{order.order_items.length} items</span>
+          <span>{(order.order_items || []).length} items</span>
         </div>
       </div>
     );
@@ -181,14 +233,14 @@ const KitchenDisplay: React.FC = () => {
   }) => (
     <div className="flex-1">
       <div className={`${color} text-white px-4 py-2 rounded-t-lg`}>
-        <h2 className="text-lg font-semibold">{title} ({orders.length})</h2>
+        <h2 className="text-lg font-semibold">{title} ({(orders || []).length})</h2>
       </div>
       <div className="bg-gray-50 rounded-b-lg p-4 min-h-[400px]">
         <div className="space-y-3">
-          {orders.length === 0 ? (
+          {(orders || []).length === 0 ? (
             <p className="text-gray-500 text-center py-8">No orders</p>
           ) : (
-            orders.map((order) => (
+            (orders || []).map((order) => (
               <OrderCard key={order.id} order={order} status={status} />
             ))
           )}
@@ -222,7 +274,10 @@ const KitchenDisplay: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Kitchen Display</h1>
+        <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-bold text-gray-900">Kitchen Display</h1>
+          <WebSocketStatus endpoint="/ws/kitchen/display" />
+        </div>
         <div className="flex items-center space-x-4">
           <button
             onClick={fetchOrders}

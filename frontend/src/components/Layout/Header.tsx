@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { ShoppingCart, User, LogOut, ChefHat, Settings } from 'lucide-react';
+import { ShoppingCart, User, LogOut, ChefHat } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { user, logout, isStaff } = useAuth();

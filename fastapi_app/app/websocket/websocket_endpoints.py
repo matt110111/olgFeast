@@ -16,6 +16,7 @@ from ..schemas.websocket import (
 )
 from .connection_manager import manager
 from ..services.order_service import OrderService
+from ..core.database import get_db
 
 
 async def kitchen_display_websocket(
@@ -247,8 +248,19 @@ async def send_all_orders_update(websocket: WebSocket):
         total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
         total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
         
+        # Prepare order items data
+        order_items_data = []
+        for item in order.order_items:
+            order_items_data.append({
+                "food_item": {
+                    "name": item.food_item.name,
+                    "value": item.food_item.value
+                },
+                "quantity": item.quantity
+            })
+        
         order_data = OrderUpdateMessage(
-            order_id=order.id,
+            id=order.id,
             ref_code=order.ref_code,
             customer_name=order.customer_name,
             status=order.status.value,
@@ -258,7 +270,8 @@ async def send_all_orders_update(websocket: WebSocket):
             date_ordered=order.date_ordered,
             date_preparing=order.date_preparing,
             date_ready=order.date_ready,
-            date_complete=order.date_complete
+            date_complete=order.date_complete,
+            order_items=order_items_data
         )
         orders_data.append(order_data.model_dump())
     
@@ -287,6 +300,7 @@ def format_order_for_kitchen(order: Order) -> dict:
     
     return {
         "id": order.id,
+        "display_id": order.display_id,
         "ref_code": order.ref_code,
         "customer_name": order.customer_name,
         "status": order.status.value,

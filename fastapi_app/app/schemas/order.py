@@ -34,6 +34,7 @@ class OrderUpdate(BaseModel):
 
 class Order(OrderBase):
     id: int
+    display_id: int
     ref_code: str
     user_id: int
     status: str
@@ -50,6 +51,7 @@ class Order(OrderBase):
 
 class OrderSummary(BaseModel):
     id: int
+    display_id: int
     ref_code: str
     customer_name: str
     status: str

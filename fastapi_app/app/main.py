@@ -79,9 +79,9 @@ app.include_router(
 @app.websocket("/ws/kitchen/display")
 async def kitchen_display_ws(websocket: WebSocket):
     """WebSocket endpoint for kitchen display updates"""
-    await manager.connect(websocket, "kitchen_display")
-    
     try:
+        await manager.connect(websocket, "kitchen_display")
+        
         while True:
             # Wait for messages from client (ping, specific requests)
             data = await websocket.receive_text()
@@ -110,6 +110,9 @@ async def kitchen_display_ws(websocket: WebSocket):
                     }, websocket)
     
     except WebSocketDisconnect:
+        await manager.disconnect(websocket)
+    except Exception as e:
+        print(f"❌ WebSocket error in kitchen display: {e}")
         await manager.disconnect(websocket)
 
 
@@ -157,9 +160,9 @@ async def order_updates_ws(websocket: WebSocket):
 @app.websocket("/ws/admin/dashboard")
 async def admin_dashboard_ws(websocket: WebSocket):
     """WebSocket endpoint for admin dashboard updates"""
-    await manager.connect(websocket, "admin_dashboard")
-    
     try:
+        await manager.connect(websocket, "admin_dashboard")
+        
         while True:
             data = await websocket.receive_text()
             
@@ -187,6 +190,9 @@ async def admin_dashboard_ws(websocket: WebSocket):
                     }, websocket)
     
     except WebSocketDisconnect:
+        await manager.disconnect(websocket)
+    except Exception as e:
+        print(f"❌ WebSocket error in admin dashboard: {e}")
         await manager.disconnect(websocket)
 
 @app.get("/")

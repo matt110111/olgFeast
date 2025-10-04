@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from datetime import datetime, timedelta
+from pydantic import BaseModel
 
 from ...core.database import get_db
-from ...models.order import Order, OrderStatus
+from ...models.order import Order, OrderStatus, OrderItem
+from ...models.menu import FoodItem
 from ...models.user import User
 from ...schemas.order import Order as OrderSchema, OrderSummary
 from ...api.deps import get_current_staff_user
@@ -12,16 +14,41 @@ from ...api.deps import get_current_staff_user
 router = APIRouter()
 
 
-@router.get("/orders", response_model=List[OrderSchema])
+class PaginatedOrdersResponse(BaseModel):
+    orders: List[OrderSchema]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
+@router.get("/orders", response_model=PaginatedOrdersResponse)
 def get_all_orders(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(10, ge=1, le=100),
     current_user: User = Depends(get_current_staff_user),
     db: Session = Depends(get_db)
 ):
-    """Get all orders for operations management (staff only)"""
-    orders = db.query(Order).order_by(Order.date_ordered.desc()).offset(skip).limit(limit).all()
-    return orders
+    """Get all orders for operations management with pagination (staff only)"""
+    skip = (page - 1) * per_page
+    
+    # Get total count
+    total = db.query(Order).count()
+    
+    # Get orders with pagination
+    orders = db.query(Order).options(
+        joinedload(Order.order_items).joinedload(OrderItem.food_item)
+    ).order_by(Order.date_ordered.desc()).offset(skip).limit(per_page).all()
+    
+    total_pages = (total + per_page - 1) // per_page
+    
+    return PaginatedOrdersResponse(
+        orders=orders,
+        total=total,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages
+    )
 
 
 @router.get("/orders/pending", response_model=List[OrderSchema])
@@ -30,7 +57,9 @@ def get_pending_orders(
     db: Session = Depends(get_db)
 ):
     """Get all pending orders (staff only)"""
-    orders = db.query(Order).filter(Order.status == OrderStatus.PENDING).order_by(Order.date_ordered).all()
+    orders = db.query(Order).options(
+        joinedload(Order.order_items).joinedload(OrderItem.food_item)
+    ).filter(Order.status == OrderStatus.PENDING).order_by(Order.date_ordered).all()
     return orders
 
 
@@ -40,7 +69,9 @@ def get_preparing_orders(
     db: Session = Depends(get_db)
 ):
     """Get all orders being prepared (staff only)"""
-    orders = db.query(Order).filter(Order.status == OrderStatus.PREPARING).order_by(Order.date_ordered).all()
+    orders = db.query(Order).options(
+        joinedload(Order.order_items).joinedload(OrderItem.food_item)
+    ).filter(Order.status == OrderStatus.PREPARING).order_by(Order.date_ordered).all()
     return orders
 
 
@@ -50,7 +81,9 @@ def get_ready_orders(
     db: Session = Depends(get_db)
 ):
     """Get all ready orders (staff only)"""
-    orders = db.query(Order).filter(Order.status == OrderStatus.READY).order_by(Order.date_ordered).all()
+    orders = db.query(Order).options(
+        joinedload(Order.order_items).joinedload(OrderItem.food_item)
+    ).filter(Order.status == OrderStatus.READY).order_by(Order.date_ordered).all()
     return orders
 
 
@@ -73,6 +106,7 @@ def get_completed_orders(
         
         result.append(OrderSummary(
             id=order.id,
+            display_id=order.display_id,
             ref_code=order.ref_code,
             customer_name=order.customer_name,
             status=order.status.value,
@@ -83,6 +117,23 @@ def get_completed_orders(
         ))
     
     return result
+
+
+@router.get("/orders/{order_id}", response_model=OrderSchema)
+def get_order_by_id(
+    order_id: int,
+    current_user: User = Depends(get_current_staff_user),
+    db: Session = Depends(get_db)
+):
+    """Get a specific order by ID (staff only)"""
+    order = db.query(Order).options(
+        joinedload(Order.order_items).joinedload(OrderItem.food_item)
+    ).filter(Order.id == order_id).first()
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    return order
 
 
 @router.get("/dashboard/analytics")

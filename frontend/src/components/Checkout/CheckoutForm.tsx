@@ -95,7 +95,7 @@ const CheckoutForm: React.FC = () => {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
           
           <div className="space-y-3 mb-6">
-            {cart.items.map((item) => (
+            {(cart?.items || []).map((item) => (
               <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100">
                 <div>
                   <h3 className="font-medium text-gray-900">{item.food_item.name}</h3>

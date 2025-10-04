@@ -16,6 +16,7 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
+    display_id = Column(Integer, unique=True, nullable=False)  # Simple 1-999 ID for staff
     ref_code = Column(String(40), unique=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     customer_name = Column(String(100), nullable=False)
@@ -33,7 +34,7 @@ class Order(Base):
     order_items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<Order(id={self.id}, ref_code='{self.ref_code}', status='{self.status}')>"
+        return f"<Order(id={self.id}, display_id={self.display_id}, ref_code='{self.ref_code}', status='{self.status}')>"
 
 
 class OrderItem(Base):

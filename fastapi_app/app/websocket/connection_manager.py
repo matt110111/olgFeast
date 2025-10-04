@@ -3,6 +3,7 @@ WebSocket connection manager for handling multiple connections
 """
 from typing import Dict, List, Set
 from fastapi import WebSocket
+from fastapi.websockets import WebSocketState
 import json
 import asyncio
 from datetime import datetime
@@ -62,12 +63,19 @@ class ConnectionManager:
             await self.disconnect(websocket)
     
     async def send_json_message(self, data: dict, websocket: WebSocket):
-        """Send a JSON message to a specific WebSocket connection"""
+        """Send a JSON message to a specific WebSocket connection with health check"""
         try:
+            # Check if connection is still alive
+            if websocket.client_state != WebSocketState.CONNECTED:
+                await self.disconnect(websocket)
+                return False
+                
             await websocket.send_text(json.dumps(data, default=str))
+            return True
         except Exception as e:
             print(f"❌ Error sending JSON message: {e}")
             await self.disconnect(websocket)
+            return False
     
     async def broadcast_to_channel(self, message: str, channel: str):
         """Broadcast a message to all connections in a specific channel"""
@@ -79,6 +87,11 @@ class ConnectionManager:
         
         for websocket in self.active_connections[channel].copy():
             try:
+                # Check if connection is still alive
+                if websocket.client_state != WebSocketState.CONNECTED:
+                    connections_to_remove.append(websocket)
+                    continue
+                    
                 await websocket.send_text(message)
             except Exception as e:
                 print(f"❌ Error broadcasting to {channel}: {e}")
@@ -110,30 +123,22 @@ class ConnectionManager:
     
     async def send_kitchen_state(self, websocket: WebSocket):
         """Send current kitchen display state"""
-        # This will be implemented with actual data from the database
-        initial_data = {
-            "type": "kitchen_update",
-            "data": {
-                "pending_orders": [],
-                "preparing_orders": [],
-                "ready_orders": []
-            },
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        await self.send_json_message(initial_data, websocket)
+        # Import here to avoid circular imports
+        from .websocket_endpoints import send_kitchen_state_update
+        
+        # Send current kitchen state with real data
+        await send_kitchen_state_update(websocket)
     
     async def send_dashboard_data(self, websocket: WebSocket):
         """Send initial dashboard data"""
-        initial_data = {
-            "type": "dashboard_update",
-            "data": {
-                "total_orders": 0,
-                "orders_today": 0,
-                "revenue_today": 0.0
-            },
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        await self.send_json_message(initial_data, websocket)
+        # Import here to avoid circular imports
+        from .websocket_endpoints import send_dashboard_analytics, send_all_orders_update
+        
+        # Send initial analytics data
+        await send_dashboard_analytics(websocket)
+        
+        # Send initial orders data
+        await send_all_orders_update(websocket)
     
     def get_connection_count(self, channel: str = None) -> int:
         """Get the number of active connections"""

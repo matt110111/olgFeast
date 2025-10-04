@@ -112,7 +112,7 @@ const CartList: React.FC = () => {
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="divide-y divide-gray-200">
-          {cart.items.map((item) => (
+          {(cart?.items || []).map((item) => (
             <div key={item.id} className="p-6 flex items-center justify-between">
               <div className="flex-1">
                 <h3 className="text-lg font-medium text-gray-900">

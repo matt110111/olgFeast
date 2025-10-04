@@ -99,6 +99,7 @@ export interface OrderItem {
 
 export interface Order {
   id: number;
+  display_id: number;
   ref_code: string;
   user_id: number;
   customer_name: string;
@@ -128,6 +129,7 @@ export interface OrderUpdate {
 
 export interface OrderSummary {
   id: number;
+  display_id: number;
   ref_code: string;
   customer_name: string;
   status: string;

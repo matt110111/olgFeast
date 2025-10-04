@@ -64,6 +64,9 @@ class WebSocketService:
         # Send updated kitchen state
         await self.broadcast_kitchen_update()
         
+        # Send updated dashboard analytics
+        await self.broadcast_dashboard_update()
+        
         print(f"📢 Broadcasted order {order.ref_code} status change: {old_status.value} → {new_status.value}")
     
     async def broadcast_new_order(self, order: Order):
@@ -100,6 +103,9 @@ class WebSocketService:
         
         # Send updated kitchen state
         await self.broadcast_kitchen_update()
+        
+        # Send updated dashboard analytics
+        await self.broadcast_dashboard_update()
         
         print(f"📢 Broadcasted new order: {order.ref_code}")
     
@@ -141,7 +147,7 @@ class WebSocketService:
         
         # Broadcast to admin dashboard
         await manager.broadcast_json_to_channel({
-            "type": "dashboard_update",
+            "type": "dashboard_analytics",
             "data": analytics,
             "timestamp": datetime.utcnow().isoformat()
         }, "admin_dashboard")
@@ -184,6 +190,7 @@ class WebSocketService:
         
         return {
             "id": order.id,
+            "display_id": order.display_id,
             "ref_code": order.ref_code,
             "customer_name": order.customer_name,
             "status": order.status.value,

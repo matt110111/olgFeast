@@ -23,7 +23,7 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: 'http://localhost:8000/api/v1',
+      baseURL: `http://${window.location.hostname}:8000/api/v1`,
       headers: {
         'Content-Type': 'application/json',
       },

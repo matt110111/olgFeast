@@ -9,6 +9,8 @@ import CartList from './components/Cart/CartList';
 import OrderList from './components/Orders/OrderList';
 import KitchenDisplay from './components/Kitchen/KitchenDisplay';
 import AdminDashboard from './components/Admin/AdminDashboard';
+import OrderHistory from './components/Admin/OrderHistory';
+import OrderDetail from './components/Admin/OrderDetail';
 import CheckoutForm from './components/Checkout/CheckoutForm';
 
 // Protected Route Component
@@ -83,6 +85,24 @@ const AdminPage: React.FC = () => {
   );
 };
 
+// Order History Page Component
+const OrderHistoryPage: React.FC = () => {
+  return (
+    <Layout>
+      <OrderHistory />
+    </Layout>
+  );
+};
+
+// Order Detail Page Component
+const OrderDetailPage: React.FC = () => {
+  return (
+    <Layout>
+      <OrderDetail />
+    </Layout>
+  );
+};
+
 // Checkout Page Component
 const CheckoutPage: React.FC = () => {
   return (
@@ -142,6 +162,22 @@ function App() {
             element={
               <ProtectedRoute requireStaff>
                 <AdminPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/orders" 
+            element={
+              <ProtectedRoute requireStaff>
+                <OrderHistoryPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/orders/:orderId" 
+            element={
+              <ProtectedRoute requireStaff>
+                <OrderDetailPage />
               </ProtectedRoute>
             } 
           />

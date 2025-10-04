@@ -28,7 +28,7 @@ class WebSocketMessage(BaseModel):
 
 class OrderUpdateMessage(BaseModel):
     """Order update WebSocket message"""
-    order_id: int
+    id: int
     ref_code: str
     customer_name: str
     status: str
@@ -39,6 +39,7 @@ class OrderUpdateMessage(BaseModel):
     date_preparing: Optional[datetime] = None
     date_ready: Optional[datetime] = None
     date_complete: Optional[datetime] = None
+    order_items: list = []
 
 
 class OrderStatusChangeMessage(BaseModel):

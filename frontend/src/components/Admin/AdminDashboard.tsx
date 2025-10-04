@@ -2,10 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../../services/api';
 import { websocketService } from '../../services/websocket';
 import { OrderStatus } from '../../types';
-import { TrendingUp, Clock, DollarSign, Package, ChevronRight, CheckCircle } from 'lucide-react';
+import { TrendingUp, Clock, DollarSign, Package, ChevronRight, CheckCircle, ChevronLeft, History, Eye } from 'lucide-react';
+import WebSocketStatus from '../WebSocketStatus';
+import { Link } from 'react-router-dom';
 
 interface AdminOrder {
   id: number;
+  display_id: number;
   ref_code: string;
   customer_name: string;
   status: OrderStatus;
@@ -47,17 +50,29 @@ const AdminDashboard: React.FC = () => {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
       const [analyticsResponse, ordersResponse] = await Promise.all([
         apiService.get('/operations/dashboard/analytics'),
-        apiService.get('/operations/orders?limit=20')
+        apiService.get(`/operations/orders?page=${page}&per_page=10`)
       ]);
 
       setAnalytics(analyticsResponse.data);
-      setOrders(ordersResponse.data);
+      
+      // Handle paginated response
+      if (ordersResponse.data.orders) {
+        setOrders(ordersResponse.data.orders);
+        setTotalPages(ordersResponse.data.total_pages);
+        setTotalOrders(ordersResponse.data.total);
+      } else {
+        // Fallback for non-paginated response
+        setOrders(ordersResponse.data);
+      }
     } catch (error) {
       setError('Failed to load dashboard data');
       console.error('Error fetching dashboard data:', error);
@@ -67,47 +82,83 @@ const AdminDashboard: React.FC = () => {
   }, []);
 
   const setupWebSocket = useCallback(() => {
-    // Connect to admin dashboard WebSocket
-    websocketService.connectAdminDashboard();
-
-    // Subscribe to analytics updates
-    websocketService.subscribe('/ws/admin/dashboard', 'dashboard_analytics', (message) => {
-      if (message.type === 'dashboard_analytics') {
-        setAnalytics(message.data);
+    try {
+      // Connect to admin dashboard WebSocket
+      const ws = websocketService.connectAdminDashboard();
+      
+      if (!ws) {
+        console.error('Failed to connect to admin WebSocket');
+        return;
       }
-    });
 
-    // Subscribe to orders updates
-    websocketService.subscribe('/ws/admin/dashboard', 'all_orders_update', (message) => {
-      if (message.type === 'all_orders_update') {
-        setOrders(message.data.orders || []);
-      }
-    });
+      // Subscribe to analytics updates
+      websocketService.subscribe('/ws/admin/dashboard', 'dashboard_analytics', (message) => {
+        try {
+          if (message.type === 'dashboard_analytics' && message.data) {
+            setAnalytics(message.data);
+          }
+        } catch (error) {
+          console.error('Error processing analytics update:', error);
+          // Fallback to REST API
+          fetchData();
+        }
+      });
 
-    // Subscribe to order status changes
-    websocketService.subscribe('/ws/admin/dashboard', 'order_status_change', (message) => {
-      if (message.type === 'order_status_change') {
-        // Refresh data when order status changes
-        fetchData();
-      }
-    });
+      // Subscribe to orders updates
+      websocketService.subscribe('/ws/admin/dashboard', 'all_orders_update', (message) => {
+        try {
+          if (message.type === 'all_orders_update' && message.data) {
+            setOrders(message.data.orders || []);
+          }
+        } catch (error) {
+          console.error('Error processing orders update:', error);
+          // Fallback to REST API
+          fetchData();
+        }
+      });
 
-    // Subscribe to new orders
-    websocketService.subscribe('/ws/admin/dashboard', 'new_order', (message) => {
-      if (message.type === 'new_order') {
-        // Refresh data when new order is created
-        fetchData();
-      }
-    });
+      // Subscribe to order status changes
+      websocketService.subscribe('/ws/admin/dashboard', 'order_status_change', (message) => {
+        try {
+          if (message.type === 'order_status_change') {
+            // Request updated data instead of full refresh
+            websocketService.requestAnalytics();
+            websocketService.requestOrders();
+          }
+        } catch (error) {
+          console.error('Error processing order status change:', error);
+          fetchData();
+        }
+      });
 
-    // Request initial data via WebSocket
-    websocketService.requestAnalytics();
-    websocketService.requestOrders();
-  }, [fetchData]);
+      // Subscribe to new orders
+      websocketService.subscribe('/ws/admin/dashboard', 'new_order', (message) => {
+        try {
+          if (message.type === 'new_order') {
+            // Request updated data instead of full refresh
+            websocketService.requestAnalytics();
+            websocketService.requestOrders();
+          }
+        } catch (error) {
+          console.error('Error processing new order:', error);
+          fetchData();
+        }
+      });
+
+      // Request initial data via WebSocket
+      websocketService.requestAnalytics();
+      websocketService.requestOrders();
+      
+    } catch (error) {
+      console.error('Failed to setup WebSocket:', error);
+      // Fallback to REST API only
+      fetchData();
+    }
+  }, []); // Remove fetchData dependency to prevent infinite re-renders
 
   useEffect(() => {
     // Initial data fetch
-    fetchData();
+    fetchData(currentPage);
 
     // Connect to WebSocket for real-time updates
     setupWebSocket();
@@ -115,7 +166,12 @@ const AdminDashboard: React.FC = () => {
     return () => {
       websocketService.disconnect('/ws/admin/dashboard');
     };
-  }, [fetchData, setupWebSocket]);
+  }, [currentPage]);
+
+  // Separate effect for WebSocket setup
+  useEffect(() => {
+    setupWebSocket();
+  }, []);
 
   const handleStatusUpdate = async (orderId: number, newStatus: OrderStatus) => {
     try {
@@ -140,18 +196,25 @@ const AdminDashboard: React.FC = () => {
   };
 
   const calculateOrderTotal = (order: AdminOrder): number => {
+    if (!order.order_items || !Array.isArray(order.order_items)) {
+      return 0;
+    }
     return order.order_items.reduce((total, item) => {
       return total + (item.food_item.value * item.quantity);
     }, 0);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const date = new Date(dateString);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    const hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${month}/${day}/${year} ${displayHours}:${minutes}:${seconds} ${ampm}`;
   };
 
 
@@ -183,7 +246,7 @@ const AdminDashboard: React.FC = () => {
       <div className="text-center py-12">
         <p className="text-red-600">{error}</p>
         <button
-          onClick={fetchData}
+          onClick={() => fetchData(currentPage)}
           className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
         >
           Retry
@@ -203,10 +266,13 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+        <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+          <WebSocketStatus endpoint="/ws/admin/dashboard" />
+        </div>
         <div className="flex items-center space-x-4">
           <button
-            onClick={fetchData}
+            onClick={() => fetchData(currentPage)}
             className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
           >
             Refresh
@@ -232,7 +298,9 @@ const AdminDashboard: React.FC = () => {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {analytics.current_status_counts.pending + analytics.current_status_counts.preparing + analytics.current_status_counts.ready}
+                    {analytics?.current_status_counts ? 
+                      analytics.current_status_counts.pending + analytics.current_status_counts.preparing + analytics.current_status_counts.ready 
+                      : 0}
                   </dd>
                 </dl>
               </div>
@@ -249,7 +317,7 @@ const AdminDashboard: React.FC = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Today's Orders</dt>
-                  <dd className="text-lg font-medium text-gray-900">{analytics.activity_stats.orders_today}</dd>
+                  <dd className="text-lg font-medium text-gray-900">{analytics?.activity_stats?.orders_today ?? 0}</dd>
                 </dl>
               </div>
             </div>
@@ -281,7 +349,7 @@ const AdminDashboard: React.FC = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Avg. Time</dt>
-                  <dd className="text-lg font-medium text-gray-900">{analytics.timing_analytics.avg_total_time}min</dd>
+                  <dd className="text-lg font-medium text-gray-900">{analytics?.timing_analytics?.avg_total_time ?? 0}min</dd>
                 </dl>
               </div>
             </div>
@@ -296,15 +364,15 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="capitalize">Pending</span>
-              <span className="font-medium">{analytics.current_status_counts.pending}</span>
+              <span className="font-medium">{analytics?.current_status_counts?.pending ?? 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="capitalize">Preparing</span>
-              <span className="font-medium">{analytics.current_status_counts.preparing}</span>
+              <span className="font-medium">{analytics?.current_status_counts?.preparing ?? 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="capitalize">Ready</span>
-              <span className="font-medium">{analytics.current_status_counts.ready}</span>
+              <span className="font-medium">{analytics?.current_status_counts?.ready ?? 0}</span>
             </div>
           </div>
         </div>
@@ -314,15 +382,15 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span>This Week</span>
-              <span className="font-medium">{analytics.activity_stats.orders_this_week}</span>
+              <span className="font-medium">{analytics?.activity_stats?.orders_this_week ?? 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span>This Month</span>
-              <span className="font-medium">{analytics.activity_stats.orders_this_month}</span>
+              <span className="font-medium">{analytics?.activity_stats?.orders_this_month ?? 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span>Completed Orders</span>
-              <span className="font-medium">{analytics.total_completed_orders}</span>
+              <span className="font-medium">{analytics?.total_completed_orders ?? 0}</span>
             </div>
           </div>
         </div>
@@ -331,7 +399,19 @@ const AdminDashboard: React.FC = () => {
       {/* Recent Orders */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Recent Orders</h3>
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">Recent Orders</h3>
+              <p className="text-sm text-gray-500">Showing {orders.length} of {totalOrders} orders</p>
+            </div>
+            <Link
+              to="/admin/orders"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <History className="h-4 w-4 mr-2" />
+              View All Orders
+            </Link>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -358,12 +438,12 @@ const AdminDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {orders.slice(0, 10).map((order) => {
+              {(orders || []).map((order) => {
                 const nextStatus = getNextStatus(order.status);
                 return (
                   <tr key={order.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      #{order.ref_code}
+                      #{order.display_id} • {order.ref_code}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {order.customer_name}
@@ -380,21 +460,30 @@ const AdminDashboard: React.FC = () => {
                       {formatDate(order.date_ordered)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {nextStatus && (
-                        <button
-                          onClick={() => handleStatusUpdate(order.id, nextStatus)}
-                          className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                      <div className="flex flex-col space-y-1">
+                        <Link
+                          to={`/admin/orders/${order.id}`}
+                          className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                          <ChevronRight className="h-3 w-3 mr-1" />
-                          Mark {nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1)}
-                        </button>
-                      )}
-                      {order.status === OrderStatus.COMPLETE && (
-                        <span className="inline-flex items-center text-green-600">
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Complete
-                        </span>
-                      )}
+                          <Eye className="h-3 w-3 mr-1" />
+                          View Details
+                        </Link>
+                        {nextStatus && (
+                          <button
+                            onClick={() => handleStatusUpdate(order.id, nextStatus)}
+                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                          >
+                            <ChevronRight className="h-3 w-3 mr-1" />
+                            Mark {nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1)}
+                          </button>
+                        )}
+                        {order.status === OrderStatus.COMPLETE && (
+                          <span className="inline-flex items-center text-green-600 text-xs">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Complete
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -402,6 +491,82 @@ const AdminDashboard: React.FC = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing{' '}
+                  <span className="font-medium">{(currentPage - 1) * 10 + 1}</span>
+                  {' '}to{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * 10, totalOrders)}
+                  </span>
+                  {' '}of{' '}
+                  <span className="font-medium">{totalOrders}</span>
+                  {' '}results
+                </p>
+              </div>
+              <div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  
+                  {/* Page numbers */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                    if (pageNum > totalPages) return null;
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          pageNum === currentPage
+                            ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                  
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-6 text-center">
