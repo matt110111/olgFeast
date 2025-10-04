@@ -5,6 +5,10 @@ import uvicorn
 
 from .core.config import settings
 from .api.v1.auth import router as auth_router
+from .api.v1.menu import router as menu_router
+from .api.v1.cart import router as cart_router
+from .api.v1.orders import router as orders_router
+from .api.v1.operations import router as operations_router
 from .core.database import engine, Base
 
 # Import models to register them with SQLAlchemy
@@ -36,6 +40,30 @@ app.include_router(
     auth_router,
     prefix="/api/v1/auth",
     tags=["authentication"]
+)
+
+app.include_router(
+    menu_router,
+    prefix="/api/v1/menu",
+    tags=["menu"]
+)
+
+app.include_router(
+    cart_router,
+    prefix="/api/v1/cart",
+    tags=["shopping-cart"]
+)
+
+app.include_router(
+    orders_router,
+    prefix="/api/v1/orders",
+    tags=["orders"]
+)
+
+app.include_router(
+    operations_router,
+    prefix="/api/v1/operations",
+    tags=["operations"]
 )
 
 @app.get("/")
