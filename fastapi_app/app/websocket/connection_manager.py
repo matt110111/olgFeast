@@ -91,6 +91,7 @@ class ConnectionManager:
     async def broadcast_json_to_channel(self, data: dict, channel: str):
         """Broadcast a JSON message to all connections in a specific channel"""
         message = json.dumps(data, default=str)
+        print(f"📢 Broadcasting to {channel}: {data.get('type', 'unknown')}")
         await self.broadcast_to_channel(message, channel)
     
     async def broadcast_to_all_channels(self, message: str):
