@@ -1,0 +1,207 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - link "olgFeast" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8] [cursor=pointer]
+        - generic [ref=e11] [cursor=pointer]: olgFeast
+      - navigation [ref=e12]:
+        - link "Menu" [ref=e13] [cursor=pointer]:
+          - /url: /
+        - link "My Orders" [ref=e14] [cursor=pointer]:
+          - /url: /orders
+        - link "Kitchen Display" [ref=e15] [cursor=pointer]:
+          - /url: /kitchen
+        - link "Admin Dashboard" [ref=e16] [cursor=pointer]:
+          - /url: /admin
+      - generic [ref=e17]:
+        - link [ref=e18] [cursor=pointer]:
+          - /url: /cart
+          - img [ref=e19] [cursor=pointer]
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - img [ref=e25]
+            - generic [ref=e28]: admin
+            - generic [ref=e29]: Staff
+          - button "Logout" [ref=e30] [cursor=pointer]:
+            - img [ref=e31] [cursor=pointer]
+  - main [ref=e35]:
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - heading "Admin Dashboard" [level=1] [ref=e38]
+        - generic [ref=e39]:
+          - button "Refresh" [ref=e40] [cursor=pointer]
+          - generic [ref=e43]: Live Data
+      - generic [ref=e44]:
+        - generic [ref=e47]:
+          - img [ref=e49]
+          - generic [ref=e55]:
+            - term [ref=e56]: Total Orders
+            - definition [ref=e57]: "7"
+        - generic [ref=e60]:
+          - img [ref=e62]
+          - generic [ref=e66]:
+            - term [ref=e67]: Today's Orders
+            - definition [ref=e68]: "12"
+        - generic [ref=e71]:
+          - img [ref=e73]
+          - generic [ref=e77]:
+            - term [ref=e78]: Completed Orders
+            - definition [ref=e79]: "5"
+        - generic [ref=e82]:
+          - img [ref=e84]
+          - generic [ref=e88]:
+            - term [ref=e89]: Avg. Time
+            - definition [ref=e90]: 10.04min
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - heading "Order Status Overview" [level=3] [ref=e93]
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - generic [ref=e96]: Pending
+              - generic [ref=e97]: "1"
+            - generic [ref=e98]:
+              - generic [ref=e99]: Preparing
+              - generic [ref=e100]: "3"
+            - generic [ref=e101]:
+              - generic [ref=e102]: Ready
+              - generic [ref=e103]: "3"
+        - generic [ref=e104]:
+          - heading "Activity Stats" [level=3] [ref=e105]
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - generic [ref=e108]: This Week
+              - generic [ref=e109]: "12"
+            - generic [ref=e110]:
+              - generic [ref=e111]: This Month
+              - generic [ref=e112]: "12"
+            - generic [ref=e113]:
+              - generic [ref=e114]: Completed Orders
+              - generic [ref=e115]: "5"
+      - generic [ref=e116]:
+        - heading "Recent Orders" [level=3] [ref=e118]
+        - table [ref=e120]:
+          - rowgroup [ref=e121]:
+            - row "Order Customer Status Total Time Actions" [ref=e122]:
+              - cell "Order" [ref=e123]
+              - cell "Customer" [ref=e124]
+              - cell "Status" [ref=e125]
+              - cell "Total" [ref=e126]
+              - cell "Time" [ref=e127]
+              - cell "Actions" [ref=e128]
+          - rowgroup [ref=e129]:
+            - row "#g6yo18p4f74bxbkz Final Test Complete $12.99 Oct 4, 12:32 PM Complete" [ref=e130]:
+              - cell "#g6yo18p4f74bxbkz" [ref=e131]
+              - cell "Final Test" [ref=e132]
+              - cell "Complete" [ref=e133]:
+                - generic [ref=e134]: Complete
+              - cell "$12.99" [ref=e135]
+              - cell "Oct 4, 12:32 PM" [ref=e136]
+              - cell "Complete" [ref=e137]:
+                - generic [ref=e138]:
+                  - img [ref=e139]
+                  - text: Complete
+            - row "#lnxxy7uld2ar2ia5 WebSocket Test Preparing $12.99 Oct 4, 12:32 PM Mark Ready" [ref=e142]:
+              - cell "#lnxxy7uld2ar2ia5" [ref=e143]
+              - cell "WebSocket Test" [ref=e144]
+              - cell "Preparing" [ref=e145]:
+                - generic [ref=e146]: Preparing
+              - cell "$12.99" [ref=e147]
+              - cell "Oct 4, 12:32 PM" [ref=e148]
+              - cell "Mark Ready" [ref=e149]:
+                - button "Mark Ready" [ref=e150] [cursor=pointer]:
+                  - img [ref=e151] [cursor=pointer]
+                  - text: Mark Ready
+            - row "#ir836nz3221idgqp test Preparing $37.96 Oct 4, 12:28 PM Mark Ready" [ref=e153]:
+              - cell "#ir836nz3221idgqp" [ref=e154]
+              - cell "test" [ref=e155]
+              - cell "Preparing" [ref=e156]:
+                - generic [ref=e157]: Preparing
+              - cell "$37.96" [ref=e158]
+              - cell "Oct 4, 12:28 PM" [ref=e159]
+              - cell "Mark Ready" [ref=e160]:
+                - button "Mark Ready" [ref=e161] [cursor=pointer]:
+                  - img [ref=e162] [cursor=pointer]
+                  - text: Mark Ready
+            - row "#8nyrne06jye9j7zq Broadcast Test Order Complete $8.99 Oct 4, 12:25 PM Complete" [ref=e164]:
+              - cell "#8nyrne06jye9j7zq" [ref=e165]
+              - cell "Broadcast Test Order" [ref=e166]
+              - cell "Complete" [ref=e167]:
+                - generic [ref=e168]: Complete
+              - cell "$8.99" [ref=e169]
+              - cell "Oct 4, 12:25 PM" [ref=e170]
+              - cell "Complete" [ref=e171]:
+                - generic [ref=e172]:
+                  - img [ref=e173]
+                  - text: Complete
+            - row "#ub3o13fd0f9mtycq WebSocket Test Order Pending $25.98 Oct 4, 12:24 PM Mark Preparing" [ref=e176]:
+              - cell "#ub3o13fd0f9mtycq" [ref=e177]
+              - cell "WebSocket Test Order" [ref=e178]
+              - cell "Pending" [ref=e179]:
+                - generic [ref=e180]: Pending
+              - cell "$25.98" [ref=e181]
+              - cell "Oct 4, 12:24 PM" [ref=e182]
+              - cell "Mark Preparing" [ref=e183]:
+                - button "Mark Preparing" [ref=e184] [cursor=pointer]:
+                  - img [ref=e185] [cursor=pointer]
+                  - text: Mark Preparing
+            - row "#v2l4jgp9u5zxmgel WebSocket Test Complete $25.98 Oct 4, 12:11 PM Complete" [ref=e187]:
+              - cell "#v2l4jgp9u5zxmgel" [ref=e188]
+              - cell "WebSocket Test" [ref=e189]
+              - cell "Complete" [ref=e190]:
+                - generic [ref=e191]: Complete
+              - cell "$25.98" [ref=e192]
+              - cell "Oct 4, 12:11 PM" [ref=e193]
+              - cell "Complete" [ref=e194]:
+                - generic [ref=e195]:
+                  - img [ref=e196]
+                  - text: Complete
+            - row "#m9gjmugh12caipzr WebSocket Test Ready $25.98 Oct 4, 12:11 PM Mark Complete" [ref=e199]:
+              - cell "#m9gjmugh12caipzr" [ref=e200]
+              - cell "WebSocket Test" [ref=e201]
+              - cell "Ready" [ref=e202]:
+                - generic [ref=e203]: Ready
+              - cell "$25.98" [ref=e204]
+              - cell "Oct 4, 12:11 PM" [ref=e205]
+              - cell "Mark Complete" [ref=e206]:
+                - button "Mark Complete" [ref=e207] [cursor=pointer]:
+                  - img [ref=e208] [cursor=pointer]
+                  - text: Mark Complete
+            - row "#3oowyufia7phwnht WebSocket Test Customer Ready $34.97 Oct 4, 12:10 PM Mark Complete" [ref=e210]:
+              - cell "#3oowyufia7phwnht" [ref=e211]
+              - cell "WebSocket Test Customer" [ref=e212]
+              - cell "Ready" [ref=e213]:
+                - generic [ref=e214]: Ready
+              - cell "$34.97" [ref=e215]
+              - cell "Oct 4, 12:10 PM" [ref=e216]
+              - cell "Mark Complete" [ref=e217]:
+                - button "Mark Complete" [ref=e218] [cursor=pointer]:
+                  - img [ref=e219] [cursor=pointer]
+                  - text: Mark Complete
+            - row "#pwsu3f88jbubhpjy test Complete $74.93 Oct 4, 12:06 PM Complete" [ref=e221]:
+              - cell "#pwsu3f88jbubhpjy" [ref=e222]
+              - cell "test" [ref=e223]
+              - cell "Complete" [ref=e224]:
+                - generic [ref=e225]: Complete
+              - cell "$74.93" [ref=e226]
+              - cell "Oct 4, 12:06 PM" [ref=e227]
+              - cell "Complete" [ref=e228]:
+                - generic [ref=e229]:
+                  - img [ref=e230]
+                  - text: Complete
+            - row "#gkbq25itjaqk3bz4 Matt Complete $74.93 Oct 4, 11:54 AM Complete" [ref=e233]:
+              - cell "#gkbq25itjaqk3bz4" [ref=e234]
+              - cell "Matt" [ref=e235]
+              - cell "Complete" [ref=e236]:
+                - generic [ref=e237]: Complete
+              - cell "$74.93" [ref=e238]
+              - cell "Oct 4, 11:54 AM" [ref=e239]
+              - cell "Complete" [ref=e240]:
+                - generic [ref=e241]:
+                  - img [ref=e242]
+                  - text: Complete
+      - paragraph [ref=e246]: "Admin Dashboard • Last updated: 8:48:47 AM"
+```
