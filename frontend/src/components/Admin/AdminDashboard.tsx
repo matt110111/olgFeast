@@ -56,8 +56,8 @@ const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       const [analyticsResponse, ordersResponse] = await Promise.all([
-        apiService.get('/api/v1/operations/dashboard/analytics'),
-        apiService.get('/api/v1/operations/orders?limit=20')
+        apiService.get('/operations/dashboard/analytics'),
+        apiService.get('/operations/orders?limit=20')
       ]);
       
       setAnalytics(analyticsResponse.data);
@@ -72,7 +72,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleStatusUpdate = async (orderId: number, newStatus: OrderStatus) => {
     try {
-      await apiService.put(`/api/v1/orders/${orderId}/status`, { status: newStatus });
+      await apiService.put(`/orders/${orderId}/status`, { status: newStatus });
       await fetchData(); // Refresh data
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -101,20 +101,6 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
-  const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-      case OrderStatus.PENDING:
-        return 'text-yellow-600';
-      case OrderStatus.PREPARING:
-        return 'text-blue-600';
-      case OrderStatus.READY:
-        return 'text-green-600';
-      case OrderStatus.COMPLETE:
-        return 'text-green-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
 
   const getStatusBadgeColor = (status: OrderStatus) => {
     switch (status) {
