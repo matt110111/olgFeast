@@ -71,7 +71,7 @@ def create_order(
     
     # Send WebSocket notification for new order
     try:
-        from ..websocket.websocket_service import WebSocketService
+        from ...websocket.websocket_service import WebSocketService
         websocket_service = WebSocketService(db)
         
         # Broadcast the new order
@@ -222,7 +222,7 @@ def update_order_status(
     
     # Send WebSocket notification for status change
     try:
-        from ..websocket.websocket_service import WebSocketService
+        from ...websocket.websocket_service import WebSocketService
         websocket_service = WebSocketService(db)
         
         # Broadcast the status change
