@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
+import { websocketService } from '../../services/websocket';
 import { OrderStatus } from '../../types';
 import { TrendingUp, Clock, DollarSign, Package, ChevronRight, CheckCircle } from 'lucide-react';
 
@@ -48,7 +49,15 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // Initial data fetch
     fetchData();
+    
+    // Connect to WebSocket for real-time updates
+    setupWebSocket();
+    
+    return () => {
+      websocketService.disconnect('/ws/admin/dashboard');
+    };
   }, []);
 
   const fetchData = async () => {
@@ -69,10 +78,49 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const setupWebSocket = () => {
+    // Connect to admin dashboard WebSocket
+    websocketService.connectAdminDashboard();
+    
+    // Subscribe to analytics updates
+    websocketService.subscribe('/ws/admin/dashboard', 'dashboard_analytics', (message) => {
+      if (message.type === 'dashboard_analytics') {
+        setAnalytics(message.data);
+      }
+    });
+
+    // Subscribe to orders updates
+    websocketService.subscribe('/ws/admin/dashboard', 'all_orders_update', (message) => {
+      if (message.type === 'all_orders_update') {
+        setOrders(message.data.orders || []);
+      }
+    });
+
+    // Subscribe to order status changes
+    websocketService.subscribe('/ws/admin/dashboard', 'order_status_change', (message) => {
+      if (message.type === 'order_status_change') {
+        // Refresh data when order status changes
+        fetchData();
+      }
+    });
+
+    // Subscribe to new orders
+    websocketService.subscribe('/ws/admin/dashboard', 'new_order', (message) => {
+      if (message.type === 'new_order') {
+        // Refresh data when new order is created
+        fetchData();
+      }
+    });
+
+    // Request initial data via WebSocket
+    websocketService.requestAnalytics();
+    websocketService.requestOrders();
+  };
+
   const handleStatusUpdate = async (orderId: number, newStatus: OrderStatus) => {
     try {
       await apiService.put(`/orders/${orderId}/status`, { status: newStatus });
-      await fetchData(); // Refresh data
+      // WebSocket will automatically update the UI - no manual refresh needed!
     } catch (error) {
       console.error('Error updating order status:', error);
     }

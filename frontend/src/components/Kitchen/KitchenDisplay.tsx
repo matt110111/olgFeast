@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
+import { websocketService } from '../../services/websocket';
 import { OrderStatus } from '../../types';
 import { Clock, CheckCircle, Package, Truck } from 'lucide-react';
 
@@ -35,7 +36,15 @@ const KitchenDisplay: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // Initial data fetch
     fetchOrders();
+    
+    // Connect to WebSocket for real-time updates
+    setupWebSocket();
+    
+    return () => {
+      websocketService.disconnect('/ws/kitchen/display');
+    };
   }, []);
 
   const fetchOrders = async () => {
@@ -58,6 +67,42 @@ const KitchenDisplay: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const setupWebSocket = () => {
+    // Connect to kitchen display WebSocket
+    websocketService.connectKitchenDisplay();
+    
+    // Subscribe to kitchen updates
+    websocketService.subscribe('/ws/kitchen/display', 'kitchen_update', (message) => {
+      if (message.type === 'kitchen_update') {
+        const data = message.data;
+        setOrders({
+          pending: data.pending_orders || [],
+          preparing: data.preparing_orders || [],
+          ready: data.ready_orders || []
+        });
+      }
+    });
+
+    // Subscribe to order status changes
+    websocketService.subscribe('/ws/kitchen/display', 'order_status_change', (message) => {
+      if (message.type === 'order_status_change') {
+        // Refresh kitchen data when order status changes
+        fetchOrders();
+      }
+    });
+
+    // Subscribe to new orders
+    websocketService.subscribe('/ws/kitchen/display', 'new_order', (message) => {
+      if (message.type === 'new_order') {
+        // Refresh kitchen data when new order is created
+        fetchOrders();
+      }
+    });
+
+    // Request initial update via WebSocket
+    websocketService.requestKitchenUpdate();
   };
 
   const getStatusIcon = (status: OrderStatus) => {
