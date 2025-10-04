@@ -1,174 +1,190 @@
-# 🍽️ olgFeast Restaurant Management System
+# OlgFeast - Restaurant Management System
 
-A modern, real-time restaurant management system built with FastAPI, React, and WebSockets.
+A modern, full-stack restaurant management system built with FastAPI and React. Features include menu management, order processing, kitchen display, and real-time updates via WebSocket.
 
-## 🚀 Quick Start
+## 🚀 Features
 
-### One-Command Run
-
-```bash
-# Run the entire application
-./run.sh
-
-# Stop the application
-./stop.sh
-```
-
-That's it! The application will be available at:
-- **Frontend**: http://localhost:3000
-- **Backend**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
-
-### Demo Credentials
-
-- **Staff**: `admin` / `admin123`
-- **Customer**: `customer` / `customer123`
-
-## 📋 Prerequisites
-
-- **Python 3.13+**
-- **Node.js 18+**
-- **Git**
+- **Menu Management**: Dynamic menu with categories and items
+- **Order Processing**: Complete order lifecycle from cart to kitchen
+- **Real-time Updates**: WebSocket-powered live order updates
+- **Kitchen Display**: Real-time kitchen dashboard for staff
+- **Admin Dashboard**: Comprehensive management interface
+- **User Authentication**: Role-based access control (Customer/Staff)
+- **Dark/Light Theme**: Modern UI with theme switching
+- **Responsive Design**: Works on desktop and mobile devices
 
 ## 🏗️ Architecture
 
+- **Backend**: FastAPI (Python 3.13)
+- **Frontend**: React 18 with TypeScript
+- **Database**: PostgreSQL
+- **Cache/WebSocket**: Redis
+- **Containerization**: Docker & Docker Compose
+- **Styling**: Tailwind CSS
+
+## 📋 Prerequisites
+
+- Docker & Docker Compose
+- Git
+
+## 🚀 Quick Start
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/olgfeast.git
+cd olgfeast
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React SPA     │    │   FastAPI       │    │   SQLite DB     │
-│   (Frontend)    │◄──►│   (Backend)     │◄──►│   (Database)    │
-│   Port: 3000    │    │   Port: 8000    │    │   Local File    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+
+### 2. First-Time Setup
+
+Run the automated setup script:
+
+```bash
+chmod +x first_time_setup.sh
+./first_time_setup.sh
 ```
 
-## ✨ Features
+This script will:
+- Generate secure environment variables
+- Set up the database
+- Create initial admin and customer accounts
+- Start all services
 
-### 🍽️ For Customers
-- Browse menu with categories
-- Add items to shopping cart
-- Place orders with real-time tracking
-- View order history
+### 3. Access the Application
 
-### 👨‍🍳 For Staff
-- Real-time kitchen display
-- Order management dashboard
-- Status updates (pending → preparing → ready)
-- Analytics and reporting
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
 
-### ⚡ Real-Time Features
-- Live order updates via WebSockets
-- Kitchen display synchronization
-- Order status notifications
-- Admin dashboard updates
+### 4. Default Login Credentials
+
+The setup script will generate credentials and save them to `deployment_credentials.txt`. 
+
+**Important**: Change these passwords after first login!
 
 ## 🛠️ Development
 
-### Manual Setup (if needed)
+### Start Development Environment
 
-#### Backend Setup
+```bash
+./docker-dev.sh
+```
+
+This starts the application with:
+- Hot-reloading for both frontend and backend
+- Development-optimized settings
+- Frontend on port 3001 (to avoid conflicts)
+
+### Stop the Application
+
+```bash
+./docker-stop.sh
+```
+
+## 📁 Project Structure
+
+```
+olgfeast/
+├── fastapi_app/          # Backend (FastAPI)
+│   ├── app/
+│   │   ├── api/         # API endpoints
+│   │   ├── core/        # Core configuration
+│   │   ├── models/      # Database models
+│   │   ├── schemas/     # Pydantic schemas
+│   │   ├── services/    # Business logic
+│   │   └── websocket/   # WebSocket handlers
+│   ├── alembic/         # Database migrations
+│   ├── tests/           # Backend tests
+│   └── requirements.txt
+├── frontend/             # Frontend (React)
+│   ├── src/
+│   │   ├── components/  # React components
+│   │   ├── contexts/    # React contexts
+│   │   ├── services/    # API services
+│   │   └── types/       # TypeScript types
+│   └── package.json
+├── docker-compose.yml    # Production Docker setup
+├── docker-compose.override.yml  # Development overrides
+└── first_time_setup.sh   # Automated setup script
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Copy the example files and update with your values:
+
+```bash
+cp docker.env.example docker.env
+cp fastapi_app/env.example fastapi_app/.env
+```
+
+### Security
+
+- Change default passwords after setup
+- Use strong, unique passwords for production
+- Consider using environment-specific configurations
+- Enable HTTPS in production
+
+## 🧪 Testing
+
+### Backend Tests
+
 ```bash
 cd fastapi_app
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python start_dev.py
+python -m pytest
 ```
 
-#### Frontend Setup
-```bash
-cd frontend
-npm install
-npm start
-```
+### Frontend Tests
 
-### Testing
-
-#### Backend Tests
-```bash
-cd fastapi_app
-pytest tests/ -v
-```
-
-#### Frontend Tests
 ```bash
 cd frontend
 npm test
 ```
 
-## 📊 Performance
+## 🚀 Deployment
 
-- **API Response Time**: < 100ms average
-- **Real-time Updates**: WebSocket-based
-- **Concurrent Requests**: 50+ requests handled efficiently
-- **Memory Usage**: Optimized for production
+### Production Deployment
 
-## 🔧 Configuration
+1. Set up your production environment variables
+2. Configure your domain and SSL certificates
+3. Update CORS settings for your domain
+4. Run the setup script on your production server
 
-The application uses environment variables for configuration. A default `.env` file is created automatically when you run the script.
-
-Key settings:
-- `DATABASE_URL`: Database connection (default: SQLite)
-- `SECRET_KEY`: JWT secret key
-- `DEBUG`: Debug mode (default: true)
-
-## 🐳 Docker Deployment (Optional)
-
-For production deployment:
+### Docker Production
 
 ```bash
-# Build and run with Docker
-docker-compose up -d
+# Build and start in production mode
+./docker-start.sh
 
-# Stop services
-docker-compose down
+# Stop and clean up
+./docker-stop.sh
 ```
 
-## 📚 API Documentation
+## 🤝 Contributing
 
-Once running, visit http://localhost:8000/docs for interactive API documentation.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 🎯 Key Features
+## 📝 License
 
-This FastAPI-based system provides:
-- **Lightning-fast** API responses
-- **Real-time** WebSocket communication
-- **Modern** React TypeScript frontend
-- **Type-safe** development
-- **Production-ready** deployment
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🐛 Troubleshooting
+## 🙏 Acknowledgments
 
-### Port Conflicts
-The run script automatically handles port conflicts by stopping existing processes.
-
-### Missing Dependencies
-```bash
-# Backend
-cd fastapi_app && pip install -r requirements.txt
-
-# Frontend
-cd frontend && npm install
-```
-
-### Database Issues
-The app uses SQLite by default. Database files are created automatically.
+- Built with [FastAPI](https://fastapi.tiangolo.com/)
+- Frontend powered by [React](https://reactjs.org/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Containerized with [Docker](https://www.docker.com/)
 
 ## 📞 Support
 
-For issues:
-1. Check the logs in the terminal
-2. Ensure all prerequisites are installed
-3. Try stopping and restarting: `./stop.sh && ./run.sh`
-
-## 🏆 What's New
-
-### v2.0 - FastAPI Restaurant System
-- ✅ Modern FastAPI backend with async support
-- ✅ React TypeScript frontend
-- ✅ Real-time WebSocket communication
-- ✅ Comprehensive testing suite
-- ✅ Production deployment ready
-- ✅ One-command setup
+If you have any questions or need help, please open an issue on GitHub.
 
 ---
 
-**Ready to run? Just execute `./run.sh` and you're done!** 🚀
+**Note**: This is a demo application. For production use, ensure proper security measures, database backups, and monitoring are in place.
