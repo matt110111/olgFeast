@@ -1,57 +1,96 @@
 import React, { useState, useEffect } from 'react';
-import { websocketService } from '../../services/websocket';
-import { AdminDashboardAnalytics } from '../../types';
-import { BarChart3, TrendingUp, Clock, Users, DollarSign, Package } from 'lucide-react';
+import { apiService } from '../../services/api';
+import { OrderStatus } from '../../types';
+import { TrendingUp, Clock, DollarSign, Package, ChevronRight, CheckCircle } from 'lucide-react';
 
 interface AdminOrder {
   id: number;
   ref_code: string;
   customer_name: string;
-  status: string;
+  status: OrderStatus;
   date_ordered: string;
   date_preparing?: string;
   date_ready?: string;
   date_complete?: string;
   total_value: number;
   order_items: Array<{
-    food_item_name: string;
+    food_item: {
+      name: string;
+      value: number;
+    };
     quantity: number;
   }>;
 }
 
+interface AnalyticsData {
+  current_status_counts: {
+    pending: number;
+    preparing: number;
+    ready: number;
+  };
+  activity_stats: {
+    orders_today: number;
+    orders_this_week: number;
+    orders_this_month: number;
+  };
+  timing_analytics: {
+    avg_time_to_preparing: number;
+    avg_time_to_ready: number;
+    avg_time_to_complete: number;
+    avg_total_time: number;
+  };
+  total_completed_orders: number;
+}
+
 const AdminDashboard: React.FC = () => {
-  const [analytics, setAnalytics] = useState<AdminDashboardAnalytics | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
-  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Connect to admin dashboard WebSocket
-    websocketService.connectAdminDashboard();
-    setConnected(true);
-
-    // Subscribe to analytics updates
-    websocketService.subscribe('/ws/admin/dashboard', 'dashboard_analytics', (message) => {
-      if (message.type === 'dashboard_analytics') {
-        setAnalytics(message.data);
-      }
-    });
-
-    // Subscribe to orders updates
-    websocketService.subscribe('/ws/admin/dashboard', 'all_orders_update', (message) => {
-      if (message.type === 'all_orders_update') {
-        setOrders(message.data.orders || []);
-      }
-    });
-
-    // Request initial data
-    websocketService.requestAnalytics();
-    websocketService.requestOrders();
-
-    // Cleanup on unmount
-    return () => {
-      websocketService.disconnect('/ws/admin/dashboard');
-    };
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [analyticsResponse, ordersResponse] = await Promise.all([
+        apiService.get('/api/v1/operations/dashboard/analytics'),
+        apiService.get('/api/v1/operations/orders?limit=20')
+      ]);
+      
+      setAnalytics(analyticsResponse.data);
+      setOrders(ordersResponse.data);
+    } catch (error) {
+      setError('Failed to load dashboard data');
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (orderId: number, newStatus: OrderStatus) => {
+    try {
+      await apiService.put(`/api/v1/orders/${orderId}/status`, { status: newStatus });
+      await fetchData(); // Refresh data
+    } catch (error) {
+      console.error('Error updating order status:', error);
+    }
+  };
+
+  const getNextStatus = (currentStatus: OrderStatus): OrderStatus | null => {
+    switch (currentStatus) {
+      case OrderStatus.PENDING:
+        return OrderStatus.PREPARING;
+      case OrderStatus.PREPARING:
+        return OrderStatus.READY;
+      case OrderStatus.READY:
+        return OrderStatus.COMPLETE;
+      default:
+        return null;
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -62,25 +101,62 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'pending':
+  const getStatusColor = (status: OrderStatus) => {
+    switch (status) {
+      case OrderStatus.PENDING:
         return 'text-yellow-600';
-      case 'preparing':
+      case OrderStatus.PREPARING:
         return 'text-blue-600';
-      case 'ready':
+      case OrderStatus.READY:
         return 'text-green-600';
-      case 'complete':
+      case OrderStatus.COMPLETE:
         return 'text-green-600';
       default:
         return 'text-gray-600';
     }
   };
 
-  if (!analytics) {
+  const getStatusBadgeColor = (status: OrderStatus) => {
+    switch (status) {
+      case OrderStatus.PENDING:
+        return 'bg-yellow-100 text-yellow-800';
+      case OrderStatus.PREPARING:
+        return 'bg-blue-100 text-blue-800';
+      case OrderStatus.READY:
+        return 'bg-green-100 text-green-800';
+      case OrderStatus.COMPLETE:
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600">{error}</p>
+        <button
+          onClick={fetchData}
+          className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!analytics) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">No analytics data available</p>
       </div>
     );
   }
@@ -89,11 +165,19 @@ const AdminDashboard: React.FC = () => {
     <div className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <div className="flex items-center space-x-2">
-          <div className={`w-3 h-3 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          <span className="text-sm text-gray-600">
-            {connected ? 'Live Updates' : 'Disconnected'}
-          </span>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={fetchData}
+            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+          >
+            Refresh
+          </button>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            <span className="text-sm text-gray-600">
+              Live Data
+            </span>
+          </div>
         </div>
       </div>
 
@@ -108,7 +192,9 @@ const AdminDashboard: React.FC = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
-                  <dd className="text-lg font-medium text-gray-900">{analytics.total_orders}</dd>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {analytics.current_status_counts.pending + analytics.current_status_counts.preparing + analytics.current_status_counts.ready}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -124,7 +210,7 @@ const AdminDashboard: React.FC = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Today's Orders</dt>
-                  <dd className="text-lg font-medium text-gray-900">{analytics.orders_today}</dd>
+                  <dd className="text-lg font-medium text-gray-900">{analytics.activity_stats.orders_today}</dd>
                 </dl>
               </div>
             </div>
@@ -139,8 +225,8 @@ const AdminDashboard: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                  <dd className="text-lg font-medium text-gray-900">${analytics.total_revenue.toFixed(2)}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Completed Orders</dt>
+                  <dd className="text-lg font-medium text-gray-900">{analytics.total_completed_orders}</dd>
                 </dl>
               </div>
             </div>
@@ -169,12 +255,18 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white shadow rounded-lg p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Order Status Overview</h3>
           <div className="space-y-3">
-            {Object.entries(analytics.status_counts).map(([status, count]) => (
-              <div key={status} className="flex justify-between items-center">
-                <span className="capitalize">{status}</span>
-                <span className="font-medium">{count}</span>
-              </div>
-            ))}
+            <div className="flex justify-between items-center">
+              <span className="capitalize">Pending</span>
+              <span className="font-medium">{analytics.current_status_counts.pending}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="capitalize">Preparing</span>
+              <span className="font-medium">{analytics.current_status_counts.preparing}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="capitalize">Ready</span>
+              <span className="font-medium">{analytics.current_status_counts.ready}</span>
+            </div>
           </div>
         </div>
 
@@ -183,11 +275,11 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span>This Week</span>
-              <span className="font-medium">{analytics.orders_this_week}</span>
+              <span className="font-medium">{analytics.activity_stats.orders_this_week}</span>
             </div>
             <div className="flex justify-between items-center">
               <span>This Month</span>
-              <span className="font-medium">{analytics.orders_this_month}</span>
+              <span className="font-medium">{analytics.activity_stats.orders_this_month}</span>
             </div>
             <div className="flex justify-between items-center">
               <span>Completed Orders</span>
@@ -221,30 +313,53 @@ const AdminDashboard: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Time
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {orders.slice(0, 10).map((order) => (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    #{order.ref_code}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {order.customer_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={getStatusColor(order.status)}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${order.total_value.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(order.date_ordered)}
-                  </td>
-                </tr>
-              ))}
+              {orders.slice(0, 10).map((order) => {
+                const nextStatus = getNextStatus(order.status);
+                return (
+                  <tr key={order.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      #{order.ref_code}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {order.customer_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(order.status)}`}>
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      ${order.total_value.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(order.date_ordered)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {nextStatus && (
+                        <button
+                          onClick={() => handleStatusUpdate(order.id, nextStatus)}
+                          className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        >
+                          <ChevronRight className="h-3 w-3 mr-1" />
+                          Mark {nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1)}
+                        </button>
+                      )}
+                      {order.status === OrderStatus.COMPLETE && (
+                        <span className="inline-flex items-center text-green-600">
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Complete
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -252,7 +367,7 @@ const AdminDashboard: React.FC = () => {
 
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-500">
-          Real-time analytics • Last updated: {new Date().toLocaleTimeString()}
+          Admin Dashboard • Last updated: {new Date().toLocaleTimeString()}
         </p>
       </div>
     </div>

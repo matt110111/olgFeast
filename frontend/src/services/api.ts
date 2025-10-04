@@ -215,6 +215,23 @@ class ApiService {
   async getOperationsAnalytics(): Promise<AxiosResponse<any>> {
     return this.api.get('/operations/dashboard/analytics');
   }
+
+  // Generic methods for direct API access
+  async get(url: string): Promise<AxiosResponse<any>> {
+    return this.api.get(url);
+  }
+
+  async post(url: string, data?: any): Promise<AxiosResponse<any>> {
+    return this.api.post(url, data);
+  }
+
+  async put(url: string, data?: any): Promise<AxiosResponse<any>> {
+    return this.api.put(url, data);
+  }
+
+  async delete(url: string): Promise<AxiosResponse<any>> {
+    return this.api.delete(url);
+  }
 }
 
 export const apiService = new ApiService();
