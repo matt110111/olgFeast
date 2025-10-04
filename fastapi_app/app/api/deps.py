@@ -54,3 +54,20 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
             detail="Inactive user"
         )
     return current_user
+
+
+async def get_current_user_websocket(token: str, db: Session) -> Optional[User]:
+    """Get current user for WebSocket authentication"""
+    try:
+        payload = verify_token(token)
+        if payload is None:
+            return None
+        
+        username: str = payload.get("sub")
+        if username is None:
+            return None
+        
+        user = db.query(User).filter(User.username == username).first()
+        return user
+    except Exception:
+        return None

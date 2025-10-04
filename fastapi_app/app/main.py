@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
+import json
+from datetime import datetime
 
 from .core.config import settings
 from .api.v1.auth import router as auth_router
@@ -10,6 +12,13 @@ from .api.v1.cart import router as cart_router
 from .api.v1.orders import router as orders_router
 from .api.v1.operations import router as operations_router
 from .core.database import engine, Base
+from .websocket.connection_manager import manager
+from .websocket.websocket_endpoints import (
+    send_kitchen_state_update,
+    send_user_orders_update,
+    send_dashboard_analytics,
+    send_all_orders_update
+)
 
 # Import models to register them with SQLAlchemy
 from .models import user, menu, cart, order
@@ -65,6 +74,120 @@ app.include_router(
     prefix="/api/v1/operations",
     tags=["operations"]
 )
+
+# WebSocket endpoints
+@app.websocket("/ws/kitchen/display")
+async def kitchen_display_ws(websocket: WebSocket):
+    """WebSocket endpoint for kitchen display updates"""
+    await manager.connect(websocket, "kitchen_display")
+    
+    try:
+        while True:
+            # Wait for messages from client (ping, specific requests)
+            data = await websocket.receive_text()
+            
+            try:
+                message = json.loads(data)
+                message_type = message.get("type")
+                
+                if message_type == "ping":
+                    # Respond to ping
+                    await manager.send_json_message({
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, websocket)
+                
+                elif message_type == "request_update":
+                    # Send current kitchen state
+                    await send_kitchen_state_update(websocket)
+                
+            except json.JSONDecodeError:
+                # Handle non-JSON messages
+                if data.lower() == "ping":
+                    await manager.send_json_message({
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, websocket)
+    
+    except WebSocketDisconnect:
+        await manager.disconnect(websocket)
+
+
+@app.websocket("/ws/orders/updates")
+async def order_updates_ws(websocket: WebSocket):
+    """WebSocket endpoint for order status updates"""
+    await manager.connect(websocket, "order_updates")
+    
+    try:
+        while True:
+            # Wait for messages from client
+            data = await websocket.receive_text()
+            
+            try:
+                message = json.loads(data)
+                message_type = message.get("type")
+                
+                if message_type == "ping":
+                    await manager.send_json_message({
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, websocket)
+                
+                elif message_type == "subscribe_orders":
+                    # Subscribe to specific user's order updates
+                    target_user_id = message.get("user_id")
+                    if target_user_id:
+                        # Update connection info
+                        manager.connection_info[websocket]["user_id"] = target_user_id
+                        
+                        # Send current orders
+                        await send_user_orders_update(websocket, target_user_id)
+                
+            except json.JSONDecodeError:
+                if data.lower() == "ping":
+                    await manager.send_json_message({
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, websocket)
+    
+    except WebSocketDisconnect:
+        await manager.disconnect(websocket)
+
+
+@app.websocket("/ws/admin/dashboard")
+async def admin_dashboard_ws(websocket: WebSocket):
+    """WebSocket endpoint for admin dashboard updates"""
+    await manager.connect(websocket, "admin_dashboard")
+    
+    try:
+        while True:
+            data = await websocket.receive_text()
+            
+            try:
+                message = json.loads(data)
+                message_type = message.get("type")
+                
+                if message_type == "ping":
+                    await manager.send_json_message({
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, websocket)
+                
+                elif message_type == "request_analytics":
+                    await send_dashboard_analytics(websocket)
+                
+                elif message_type == "request_orders":
+                    await send_all_orders_update(websocket)
+                
+            except json.JSONDecodeError:
+                if data.lower() == "ping":
+                    await manager.send_json_message({
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, websocket)
+    
+    except WebSocketDisconnect:
+        await manager.disconnect(websocket)
 
 @app.get("/")
 async def root():

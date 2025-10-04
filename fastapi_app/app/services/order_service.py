@@ -7,11 +7,13 @@ import string
 from ..models.order import Order, OrderItem, OrderStatus
 from ..models.cart import Cart, CartItem
 from ..schemas.order import OrderCreate, OrderUpdate
+from ..websocket.websocket_service import WebSocketService
 
 
 class OrderService:
     def __init__(self, db: Session):
         self.db = db
+        self.websocket_service = WebSocketService(db)
     
     def generate_ref_code(self) -> str:
         """Generate a unique reference code for orders"""
@@ -57,6 +59,19 @@ class OrderService:
         
         self.db.commit()
         self.db.refresh(order)
+        
+        # Broadcast new order
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If we're in an async context, schedule the broadcast
+                asyncio.create_task(self.websocket_service.broadcast_new_order(order))
+            else:
+                # If we're in a sync context, run the broadcast
+                loop.run_until_complete(self.websocket_service.broadcast_new_order(order))
+        except Exception as e:
+            print(f"⚠️ Failed to broadcast new order: {e}")
         
         return order
     
@@ -111,6 +126,19 @@ class OrderService:
         
         self.db.commit()
         self.db.refresh(order)
+        
+        # Broadcast status change
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If we're in an async context, schedule the broadcast
+                asyncio.create_task(self.websocket_service.broadcast_order_status_change(order, old_status, new_status))
+            else:
+                # If we're in a sync context, run the broadcast
+                loop.run_until_complete(self.websocket_service.broadcast_order_status_change(order, old_status, new_status))
+        except Exception as e:
+            print(f"⚠️ Failed to broadcast status change: {e}")
         
         return order
     
