@@ -176,3 +176,61 @@ export interface KitchenUpdateMessage {
   ready_orders: any[];
   timestamp: string;
 }
+
+export interface KitchenDisplayOrder {
+  id: number;
+  ref_code: string;
+  customer_name: string;
+  status: string;
+  date_ordered: string;
+  date_preparing?: string;
+  date_ready?: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+  }>;
+  total_value: number;
+  total_tickets: number;
+}
+
+export interface KitchenDisplayUpdate {
+  pending_orders: KitchenDisplayOrder[];
+  preparing_orders: KitchenDisplayOrder[];
+  ready_orders: KitchenDisplayOrder[];
+}
+
+export interface AdminDashboardAnalytics {
+  total_orders: number;
+  orders_today: number;
+  orders_this_week: number;
+  orders_this_month: number;
+  total_completed_orders: number;
+  status_counts: Record<string, number>;
+  total_revenue: number;
+  timing_analytics: {
+    avg_preparation_time: number;
+    avg_total_time: number;
+  };
+}
+
+export interface AdminDashboardOrder {
+  id: number;
+  ref_code: string;
+  customer_name: string;
+  status: string;
+  date_ordered: string;
+  date_preparing?: string;
+  date_ready?: string;
+  date_complete?: string;
+  total_value: number;
+  order_items: Array<{
+    food_item_name: string;
+    quantity: number;
+  }>;
+}
+
+export interface AuthTokens {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+}

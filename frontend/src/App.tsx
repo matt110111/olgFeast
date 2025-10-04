@@ -5,6 +5,11 @@ import Layout from './components/Layout/Layout';
 import LoginForm from './components/Auth/LoginForm';
 import RegisterForm from './components/Auth/RegisterForm';
 import MenuList from './components/Menu/MenuList';
+import CartList from './components/Cart/CartList';
+import OrderList from './components/Orders/OrderList';
+import KitchenDisplay from './components/Kitchen/KitchenDisplay';
+import AdminDashboard from './components/Admin/AdminDashboard';
+import CheckoutForm from './components/Checkout/CheckoutForm';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAuth?: boolean; requireStaff?: boolean }> = ({ 
@@ -42,50 +47,47 @@ const HomePage: React.FC = () => {
   );
 };
 
-// Cart Page Component (placeholder)
+// Cart Page Component
 const CartPage: React.FC = () => {
   return (
     <Layout>
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-gray-900">Shopping Cart</h1>
-        <p className="mt-2 text-gray-600">Cart functionality coming soon...</p>
-      </div>
+      <CartList />
     </Layout>
   );
 };
 
-// Orders Page Component (placeholder)
+// Orders Page Component
 const OrdersPage: React.FC = () => {
   return (
     <Layout>
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
-        <p className="mt-2 text-gray-600">Order history coming soon...</p>
-      </div>
+      <OrderList />
     </Layout>
   );
 };
 
-// Kitchen Display Page Component (placeholder)
+// Kitchen Display Page Component
 const KitchenPage: React.FC = () => {
   return (
     <Layout>
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-gray-900">Kitchen Display</h1>
-        <p className="mt-2 text-gray-600">Real-time kitchen display coming soon...</p>
-      </div>
+      <KitchenDisplay />
     </Layout>
   );
 };
 
-// Admin Dashboard Page Component (placeholder)
+// Admin Dashboard Page Component
 const AdminPage: React.FC = () => {
   return (
     <Layout>
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="mt-2 text-gray-600">Analytics and management coming soon...</p>
-      </div>
+      <AdminDashboard />
+    </Layout>
+  );
+};
+
+// Checkout Page Component
+const CheckoutPage: React.FC = () => {
+  return (
+    <Layout>
+      <CheckoutForm />
     </Layout>
   );
 };
@@ -109,16 +111,24 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/orders" 
-            element={
-              <ProtectedRoute>
-                <OrdersPage />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Staff Only Routes */}
+                 <Route
+                   path="/orders"
+                   element={
+                     <ProtectedRoute>
+                       <OrdersPage />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/checkout"
+                   element={
+                     <ProtectedRoute>
+                       <CheckoutPage />
+                     </ProtectedRoute>
+                   }
+                 />
+
+                 {/* Staff Only Routes */}
           <Route 
             path="/kitchen" 
             element={
