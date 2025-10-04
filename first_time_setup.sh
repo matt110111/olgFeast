@@ -1,7 +1,32 @@
 #!/bin/bash
 
 # OlgFeast First-Time Setup Script
-# This script handles the initial setup for production deployment
+# # This script handles the initial setup for production deployment
+# [INFO] Initializing database with schema and sample data...
+# 🗄️  Setting up OlgFeast database...
+# 📋 Creating database tables...
+# 🍽️  Creating menu items...
+# ✅ Database setup completed successfully!
+
+# 📋 Generated Credentials:
+#    Admin User: admin / 9ymTF4O2ggPMptdr2LBtJQ
+#    Customer User: customer / pSGeQ3-PWwjqGwCA
+
+# ⚠️  IMPORTANT: Save these credentials securely!
+#    You can change them later through the admin panel.
+# ❌ Error setting up database: [Errno 13] Permission denied: 'deployment_credentials.txt'
+# Traceback (most recent call last):
+#   File "/app/setup_database.py", line 166, in <module>
+#     main()
+#     ~~~~^^
+#   File "/app/setup_database.py", line 163, in main
+#     setup_database()
+#     ~~~~~~~~~~~~~~^^
+#   File "/app/setup_database.py", line 127, in setup_database
+#     with open(credentials_file, "w") as f:
+#          ~~~~^^^^^^^^^^^^^^^^^^^^^^^
+# PermissionError: [Errno 13] Permission denied: 'deployment_credentials.txt'
+
 
 set -e
 
