@@ -69,8 +69,37 @@ def create_order(
     db.commit()
     db.refresh(order)
     
-    # TODO: WebSocket broadcasting temporarily disabled to fix event loop issues
-    print(f"📢 New order created: {order.ref_code} - WebSocket broadcasting will be re-enabled")
+    # Send WebSocket notification for new order
+    try:
+        from ...websocket.connection_manager import manager
+
+        # Create new order message
+        total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
+        total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
+
+        new_order_message = {
+            "type": "new_order",
+            "data": {
+                "order_id": order.id,
+                "ref_code": order.ref_code,
+                "customer_name": order.customer_name,
+                "total_value": total_value,
+                "total_tickets": total_tickets,
+                "item_count": len(order.order_items),
+                "timestamp": datetime.utcnow().isoformat()
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+        # Broadcast using asyncio.create_task
+        import asyncio
+        try:
+            asyncio.create_task(manager.broadcast_json_to_channel(new_order_message, "kitchen_display"))
+            asyncio.create_task(manager.broadcast_json_to_channel(new_order_message, "admin_dashboard"))
+        except Exception as e:
+            print(f"⚠️ Failed to broadcast new order: {e}")
+    except ImportError as e:
+        print(f"⚠️ WebSocket service not available: {e}")
     
     return order
 
@@ -194,19 +223,44 @@ def update_order_status(
     order.status = OrderStatus(order_update.status)
     
     # Update timing fields based on status
-    now = datetime.utcnow()
+    current_time = datetime.utcnow()
     if order.status == OrderStatus.PREPARING and old_status == OrderStatus.PENDING:
-        order.date_preparing = now
+        order.date_preparing = current_time
     elif order.status == OrderStatus.READY and old_status == OrderStatus.PREPARING:
-        order.date_ready = now
+        order.date_ready = current_time
     elif order.status == OrderStatus.COMPLETE and old_status == OrderStatus.READY:
-        order.date_complete = now
+        order.date_complete = current_time
     
     db.commit()
     db.refresh(order)
     
-    # TODO: WebSocket broadcasting temporarily disabled to fix event loop issues
-    print(f"📢 Order {order.ref_code} status changed: {old_status.value} → {order.status.value} - WebSocket broadcasting will be re-enabled")
+    # Send WebSocket notification for status change
+    try:
+        from ...websocket.connection_manager import manager
+
+        # Create status change message
+        status_change_message = {
+            "type": "order_status_change",
+            "data": {
+                "order_id": order.id,
+                "ref_code": order.ref_code,
+                "old_status": old_status.value,
+                "new_status": order.status.value,
+                "timestamp": datetime.utcnow().isoformat(),
+                "customer_name": order.customer_name
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+        # Broadcast using asyncio.create_task
+        import asyncio
+        try:
+            asyncio.create_task(manager.broadcast_json_to_channel(status_change_message, "kitchen_display"))
+            asyncio.create_task(manager.broadcast_json_to_channel(status_change_message, "admin_dashboard"))
+        except Exception as e:
+            print(f"⚠️ Failed to broadcast status change: {e}")
+    except ImportError as e:
+        print(f"⚠️ WebSocket service not available: {e}")
     
     return order
 
