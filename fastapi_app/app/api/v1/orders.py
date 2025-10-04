@@ -17,42 +17,58 @@ router = APIRouter()
 
 def broadcast_new_order_background(message: dict):
     """Background task to broadcast new order messages"""
+    import threading
     import asyncio
-    try:
-        # Create new event loop for background task
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
 
-        async def _broadcast():
-            from ...websocket.connection_manager import manager
-            await manager.broadcast_json_to_channel(message, "kitchen_display")
-            await manager.broadcast_json_to_channel(message, "admin_dashboard")
-            print(f"📢 Broadcasted new order: {message['data']['ref_code']}")
+    def _broadcast():
+        try:
+            # Create new event loop for this thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-        loop.run_until_complete(_broadcast())
-        loop.close()
-    except Exception as e:
-        print(f"⚠️ Failed to broadcast new order: {e}")
+            async def broadcast():
+                from ...websocket.connection_manager import manager
+                await manager.broadcast_json_to_channel(message, "kitchen_display")
+                await manager.broadcast_json_to_channel(message, "admin_dashboard")
+                print(f"📢 Broadcasted new order: {message['data']['ref_code']}")
+
+            loop.run_until_complete(broadcast())
+            loop.close()
+        except Exception as e:
+            print(f"⚠️ Failed to broadcast new order: {e}")
+
+    # Run in background thread
+    thread = threading.Thread(target=_broadcast)
+    thread.daemon = True
+    thread.start()
 
 
 def broadcast_status_change_background(message: dict):
     """Background task to broadcast status change messages"""
+    import threading
     import asyncio
-    try:
-        # Create new event loop for background task
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
 
-        async def _broadcast():
-            from ...websocket.connection_manager import manager
-            await manager.broadcast_json_to_channel(message, "kitchen_display")
-            await manager.broadcast_json_to_channel(message, "admin_dashboard")
-            print(f"📢 Broadcasted status change: {message['data']['ref_code']} {message['data']['old_status']} → {message['data']['new_status']}")
+    def _broadcast():
+        try:
+            # Create new event loop for this thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-        loop.run_until_complete(_broadcast())
-        loop.close()
-    except Exception as e:
-        print(f"⚠️ Failed to broadcast status change: {e}")
+            async def broadcast():
+                from ...websocket.connection_manager import manager
+                await manager.broadcast_json_to_channel(message, "kitchen_display")
+                await manager.broadcast_json_to_channel(message, "admin_dashboard")
+                print(f"📢 Broadcasted status change: {message['data']['ref_code']} {message['data']['old_status']} → {message['data']['new_status']}")
+
+            loop.run_until_complete(broadcast())
+            loop.close()
+        except Exception as e:
+            print(f"⚠️ Failed to broadcast status change: {e}")
+
+    # Run in background thread
+    thread = threading.Thread(target=_broadcast)
+    thread.daemon = True
+    thread.start()
 
 
 def generate_ref_code() -> str:
