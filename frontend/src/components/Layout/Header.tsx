@@ -1,11 +1,13 @@
 import React, { memo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCart } from '../../contexts/CartContext';
 import { ShoppingCart, User, LogOut, ChefHat } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 
 const Header: React.FC = memo(() => {
   const { user, logout, isStaff } = useAuth();
+  const { cartItemCount } = useCart();
   const navigate = useNavigate();
 
   const handleLogout = useCallback(() => {
@@ -70,7 +72,11 @@ const Header: React.FC = memo(() => {
                   className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <ShoppingCart className="h-6 w-6" />
-                  {/* Cart badge would go here */}
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                      {cartItemCount > 99 ? '99+' : cartItemCount}
+                    </span>
+                  )}
                 </Link>
 
                 {/* User menu */}

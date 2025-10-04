@@ -1,65 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { apiService } from '../../services/api';
-import { CartSummary, CartItem } from '../../types';
+import { useCart } from '../../contexts/CartContext';
 import { Trash2, Plus, Minus, ShoppingBag, CreditCard } from 'lucide-react';
 
 const CartList: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const { cart, isLoading: loading, error, removeFromCart, updateQuantity, clearCart } = useCart();
   const navigate = useNavigate();
-  const [cart, setCart] = useState<CartSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchCart();
-    } else {
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
-
-  const fetchCart = async () => {
-    try {
-      const response = await apiService.getCartItems();
-      setCart(response.data);
-    } catch (error) {
-      setError('Failed to load cart');
-      console.error('Error fetching cart:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleQuantityChange = async (cartItemId: number, change: 'increase' | 'decrease') => {
-    try {
-      if (change === 'increase') {
-        await apiService.increaseItemQuantity(cartItemId);
-      } else {
-        await apiService.decreaseItemQuantity(cartItemId);
-      }
-      await fetchCart();
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-    }
-  };
-
-  const handleRemoveItem = async (cartItemId: number) => {
-    try {
-      await apiService.removeCartItem(cartItemId);
-      await fetchCart();
-    } catch (error) {
-      console.error('Error removing item:', error);
-    }
-  };
-
-  const handleClearCart = async () => {
-    try {
-      await apiService.clearCart();
-      await fetchCart();
-    } catch (error) {
-      console.error('Error clearing cart:', error);
+    const currentItem = cart?.items.find(item => item.id === cartItemId);
+    if (!currentItem) return;
+    
+    const newQuantity = change === 'increase' ? currentItem.quantity + 1 : currentItem.quantity - 1;
+    
+    if (newQuantity <= 0) {
+      await removeFromCart(cartItemId);
+    } else {
+      await updateQuantity(cartItemId, newQuantity);
     }
   };
 
@@ -103,7 +62,7 @@ const CartList: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Shopping Cart</h1>
         <button
-          onClick={handleClearCart}
+          onClick={clearCart}
           className="text-red-600 hover:text-red-800 text-sm font-medium"
         >
           Clear Cart
@@ -149,7 +108,7 @@ const CartList: React.FC = () => {
                 </div>
 
                 <button
-                  onClick={() => handleRemoveItem(item.id)}
+                  onClick={() => removeFromCart(item.id)}
                   className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full"
                 >
                   <Trash2 className="h-4 w-4" />

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout/Layout';
 import LoginForm from './components/Auth/LoginForm';
@@ -117,7 +118,8 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
+        <CartProvider>
+          <Router>
           <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
@@ -187,7 +189,8 @@ function App() {
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </Router>
+          </Router>
+        </CartProvider>
       </AuthProvider>
     </ThemeProvider>
   );
