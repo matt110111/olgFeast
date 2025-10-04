@@ -11,10 +11,25 @@ echo "=================================================="
 # Function to check if port is in use
 check_port() {
     local port=$1
-    if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null ; then
-        return 0  # Port is in use
+    if command -v lsof >/dev/null 2>&1; then
+        if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+            return 0  # Port is in use
+        else
+            return 1  # Port is free
+        fi
+    elif command -v netstat >/dev/null 2>&1; then
+        if netstat -ln | grep ":$port " >/dev/null 2>&1; then
+            return 0  # Port is in use
+        else
+            return 1  # Port is free
+        fi
     else
-        return 1  # Port is free
+        # Fallback: try to connect to the port
+        if timeout 1 bash -c "</dev/tcp/localhost/$port" 2>/dev/null; then
+            return 0  # Port is in use
+        else
+            return 1  # Port is free
+        fi
     fi
 }
 
@@ -22,7 +37,16 @@ check_port() {
 kill_port() {
     local port=$1
     echo "🔧 Stopping processes on port $port..."
-    lsof -ti:$port | xargs kill -9 2>/dev/null || true
+    
+    if command -v lsof >/dev/null 2>&1; then
+        lsof -ti:$port | xargs kill -9 2>/dev/null || true
+    elif command -v fuser >/dev/null 2>&1; then
+        fuser -k $port/tcp 2>/dev/null || true
+    else
+        echo "⚠️  Cannot automatically kill processes on port $port"
+        echo "Please manually stop any processes using port $port"
+    fi
+    
     sleep 2
 }
 
