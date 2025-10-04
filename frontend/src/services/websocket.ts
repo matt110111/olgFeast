@@ -25,7 +25,13 @@ class WebSocketService {
     }
 
     // Use environment variable for WebSocket URL, fallback to current host
-    const wsUrl = process.env.REACT_APP_WS_URL || `ws://${window.location.hostname}:8000`;
+    // In production (nginx), use the same host as the frontend
+    // In development, connect directly to backend
+    const isProduction = window.location.port === '3000' || window.location.port === '';
+    const wsUrl = process.env.REACT_APP_WS_URL || 
+      (isProduction 
+        ? `ws://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}`
+        : `ws://${window.location.hostname}:8000`);
     const ws = new WebSocket(`${wsUrl}${endpoint}`);
     
     ws.onopen = () => {
