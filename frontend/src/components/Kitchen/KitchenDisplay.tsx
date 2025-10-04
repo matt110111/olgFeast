@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../../services/api';
 import { websocketService } from '../../services/websocket';
 import { OrderStatus } from '../../types';
@@ -35,19 +35,7 @@ const KitchenDisplay: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    // Initial data fetch
-    fetchOrders();
-    
-    // Connect to WebSocket for real-time updates
-    setupWebSocket();
-    
-    return () => {
-      websocketService.disconnect('/ws/kitchen/display');
-    };
-  }, []);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const [pendingResponse, preparingResponse, readyResponse] = await Promise.all([
@@ -55,7 +43,7 @@ const KitchenDisplay: React.FC = () => {
         apiService.get('/operations/orders/preparing'),
         apiService.get('/operations/orders/ready')
       ]);
-      
+
       setOrders({
         pending: pendingResponse.data || [],
         preparing: preparingResponse.data || [],
@@ -67,12 +55,12 @@ const KitchenDisplay: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const setupWebSocket = () => {
+  const setupWebSocket = useCallback(() => {
     // Connect to kitchen display WebSocket
     websocketService.connectKitchenDisplay();
-    
+
     // Subscribe to kitchen updates
     websocketService.subscribe('/ws/kitchen/display', 'kitchen_update', (message) => {
       if (message.type === 'kitchen_update') {
@@ -103,6 +91,50 @@ const KitchenDisplay: React.FC = () => {
 
     // Request initial update via WebSocket
     websocketService.requestKitchenUpdate();
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    // Initial data fetch
+    fetchOrders();
+
+    // Connect to WebSocket for real-time updates
+    setupWebSocket();
+
+    return () => {
+      websocketService.disconnect('/ws/kitchen/display');
+    };
+  }, [fetchOrders, setupWebSocket]);
+
+  const getStatusIcon = (status: OrderStatus) => {
+    
+    // Subscribe to kitchen updates
+    websocketService.subscribe('/ws/kitchen/display', 'kitchen_update', (message) => {
+      if (message.type === 'kitchen_update') {
+        const data = message.data;
+        setOrders({
+          pending: data.pending_orders || [],
+          preparing: data.preparing_orders || [],
+          ready: data.ready_orders || []
+        });
+      }
+    });
+
+    // Subscribe to order status changes
+    websocketService.subscribe('/ws/kitchen/display', 'order_status_change', (message) => {
+      if (message.type === 'order_status_change') {
+        // Refresh kitchen data when order status changes
+        fetchOrders();
+      }
+    });
+
+    // Subscribe to new orders
+    websocketService.subscribe('/ws/kitchen/display', 'new_order', (message) => {
+      if (message.type === 'new_order') {
+        // Refresh kitchen data when new order is created
+        fetchOrders();
+      }
+    });
+
   };
 
   const getStatusIcon = (status: OrderStatus) => {

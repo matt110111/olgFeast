@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../../services/api';
 import { websocketService } from '../../services/websocket';
 import { OrderStatus } from '../../types';
@@ -48,26 +48,14 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    // Initial data fetch
-    fetchData();
-    
-    // Connect to WebSocket for real-time updates
-    setupWebSocket();
-    
-    return () => {
-      websocketService.disconnect('/ws/admin/dashboard');
-    };
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [analyticsResponse, ordersResponse] = await Promise.all([
         apiService.get('/operations/dashboard/analytics'),
         apiService.get('/operations/orders?limit=20')
       ]);
-      
+
       setAnalytics(analyticsResponse.data);
       setOrders(ordersResponse.data);
     } catch (error) {
@@ -76,12 +64,12 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const setupWebSocket = () => {
+  const setupWebSocket = useCallback(() => {
     // Connect to admin dashboard WebSocket
     websocketService.connectAdminDashboard();
-    
+
     // Subscribe to analytics updates
     websocketService.subscribe('/ws/admin/dashboard', 'dashboard_analytics', (message) => {
       if (message.type === 'dashboard_analytics') {
@@ -115,7 +103,19 @@ const AdminDashboard: React.FC = () => {
     // Request initial data via WebSocket
     websocketService.requestAnalytics();
     websocketService.requestOrders();
-  };
+  }, [fetchData]);
+
+  useEffect(() => {
+    // Initial data fetch
+    fetchData();
+
+    // Connect to WebSocket for real-time updates
+    setupWebSocket();
+
+    return () => {
+      websocketService.disconnect('/ws/admin/dashboard');
+    };
+  }, [fetchData, setupWebSocket]);
 
   const handleStatusUpdate = async (orderId: number, newStatus: OrderStatus) => {
     try {
