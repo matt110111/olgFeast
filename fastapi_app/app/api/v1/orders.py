@@ -57,8 +57,22 @@ def broadcast_status_change_background(message: dict):
 
             async def broadcast():
                 from ...websocket.connection_manager import manager
+                from ...websocket.websocket_service import WebSocketService
+                from ...core.database import SessionLocal
+                
+                # Broadcast status change message
                 await manager.broadcast_json_to_channel(message, "kitchen_display")
                 await manager.broadcast_json_to_channel(message, "admin_dashboard")
+                
+                # Also send updated kitchen state and dashboard analytics
+                db = SessionLocal()
+                try:
+                    websocket_service = WebSocketService(db)
+                    await websocket_service.broadcast_kitchen_update()
+                    await websocket_service.broadcast_dashboard_update()
+                finally:
+                    db.close()
+                
                 print(f"📢 Broadcasted status change: {message['data']['ref_code']} {message['data']['old_status']} → {message['data']['new_status']}")
 
             loop.run_until_complete(broadcast())
