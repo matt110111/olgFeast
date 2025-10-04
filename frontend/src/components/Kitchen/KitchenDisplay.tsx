@@ -105,37 +105,6 @@ const KitchenDisplay: React.FC = () => {
     };
   }, [fetchOrders, setupWebSocket]);
 
-  const getStatusIcon = (status: OrderStatus) => {
-    
-    // Subscribe to kitchen updates
-    websocketService.subscribe('/ws/kitchen/display', 'kitchen_update', (message) => {
-      if (message.type === 'kitchen_update') {
-        const data = message.data;
-        setOrders({
-          pending: data.pending_orders || [],
-          preparing: data.preparing_orders || [],
-          ready: data.ready_orders || []
-        });
-      }
-    });
-
-    // Subscribe to order status changes
-    websocketService.subscribe('/ws/kitchen/display', 'order_status_change', (message) => {
-      if (message.type === 'order_status_change') {
-        // Refresh kitchen data when order status changes
-        fetchOrders();
-      }
-    });
-
-    // Subscribe to new orders
-    websocketService.subscribe('/ws/kitchen/display', 'new_order', (message) => {
-      if (message.type === 'new_order') {
-        // Refresh kitchen data when new order is created
-        fetchOrders();
-      }
-    });
-
-  };
 
   const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
@@ -171,36 +140,38 @@ const KitchenDisplay: React.FC = () => {
     }, 0);
   };
 
-  const OrderCard: React.FC<{ order: KitchenOrder; status: OrderStatus }> = ({ order, status }) => (
-    <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-l-primary-500">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center space-x-2">
-          {getStatusIcon(status)}
-          <span className="font-semibold text-lg">#{order.ref_code}</span>
-        </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-500">{formatTime(order.date_ordered)}</p>
-          <p className="font-medium">${calculateOrderTotal(order).toFixed(2)}</p>
-        </div>
-      </div>
-      
-      <p className="text-sm text-gray-600 mb-3">{order.customer_name}</p>
-      
-      <div className="space-y-1 mb-3">
-        {order.order_items.map((item, index) => (
-          <div key={index} className="flex justify-between text-sm">
-            <span>{item.food_item.name}</span>
-            <span className="font-medium">x{item.quantity}</span>
+  const OrderCard: React.FC<{ order: KitchenOrder; status: OrderStatus }> = ({ order, status }) => {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-l-primary-500">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            {getStatusIcon(status)}
+            <span className="font-semibold text-lg">#{order.ref_code}</span>
           </div>
-        ))}
+          <div className="text-right">
+            <p className="text-sm text-gray-500">{formatTime(order.date_ordered)}</p>
+            <p className="font-medium">${calculateOrderTotal(order).toFixed(2)}</p>
+          </div>
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-3">{order.customer_name}</p>
+        
+        <div className="space-y-1 mb-3">
+          {order.order_items.map((item, index) => (
+            <div key={index} className="flex justify-between text-sm">
+              <span>{item.food_item.name}</span>
+              <span className="font-medium">x{item.quantity}</span>
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex justify-between items-center text-xs text-gray-500">
+          <span>{calculateTotalTickets(order)} tickets</span>
+          <span>{order.order_items.length} items</span>
+        </div>
       </div>
-      
-      <div className="flex justify-between items-center text-xs text-gray-500">
-        <span>{calculateTotalTickets(order)} tickets</span>
-        <span>{order.order_items.length} items</span>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const Section: React.FC<{ title: string; orders: KitchenOrder[]; status: OrderStatus; color: string }> = ({ 
     title, 
