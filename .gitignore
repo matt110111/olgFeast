@@ -4,6 +4,8 @@
 .env.production
 .env.staging
 docker.env
+docker.prod.env
+docker.staging.env
 *.env
 !*.env.example
 
@@ -11,6 +13,11 @@ docker.env
 *credentials*
 deployment_credentials.txt
 secrets.json
+
+# Production deployment files
+deploy.log
+backups/
+*.backup
 
 # Database Files
 *.db

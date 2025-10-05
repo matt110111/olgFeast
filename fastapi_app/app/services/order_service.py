@@ -147,14 +147,13 @@ class OrderService:
             cart_items: List of cart items to add.
         """
         for cart_item in cart_items:
-            # Add item multiple times based on quantity
-            for _ in range(cart_item.quantity):
-                order_item = OrderItem(
-                    order_id=order_id,
-                    food_item_id=cart_item.food_item_id,
-                    quantity=1
-                )
-                self.db.add(order_item)
+            # Create one order item with the correct quantity
+            order_item = OrderItem(
+                order_id=order_id,
+                food_item_id=cart_item.food_item_id,
+                quantity=cart_item.quantity
+            )
+            self.db.add(order_item)
     
     def _clear_user_cart(self, cart_id: int) -> None:
         """Clear all items from a user's cart.

@@ -147,14 +147,26 @@ npm test
 
 ## 🚀 Deployment
 
-### Production Deployment
+### Automatic CI/CD Deployment
 
-1. Set up your production environment variables
-2. Configure your domain and SSL certificates
-3. Update CORS settings for your domain
-4. Run the setup script on your production server
+OlgFeast includes a complete CI/CD pipeline using GitHub Actions and GitHub Container Registry for automatic deployments.
 
-### Docker Production
+📖 **For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
+
+**Quick Setup:**
+1. Set up GitHub Personal Access Token with package permissions
+2. Add repository secrets (`GHCR_TOKEN`, `GHCR_OWNER`)
+3. Push to main branch → Automatic build and deployment
+4. Deploy to production server using provided scripts
+
+**Features:**
+- ✅ **Zero-cost** deployment (GitHub Actions + GHCR free tiers)
+- ✅ **Automatic builds** on git push
+- ✅ **Zero-downtime deployments** with health checks
+- ✅ **Rollback capabilities** for quick recovery
+- ✅ **Production-ready** Docker images
+
+### Manual Production Deployment
 
 ```bash
 # Build and start in production mode
@@ -162,6 +174,9 @@ npm test
 
 # Stop and clean up
 ./docker-stop.sh
+
+# Deploy using production script (after CI/CD setup)
+./deploy.sh deploy
 ```
 
 ## 🤝 Contributing

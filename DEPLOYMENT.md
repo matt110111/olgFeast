@@ -1,427 +1,450 @@
-# olgFeast Deployment Guide
+# OlgFeast Production Deployment Guide
 
-This guide covers deployment of the olgFeast restaurant management system from development to production.
+This guide covers setting up automatic deployment using GitHub Actions and GitHub Container Registry (ghcr.io) for the OlgFeast application.
 
-## Architecture Overview
+## Table of Contents
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React SPA     │    │   FastAPI       │    │   PostgreSQL    │
-│   (Frontend)    │◄──►│   (Backend)     │◄──►│   (Database)    │
-│   Port: 3000    │    │   Port: 8000    │    │   Port: 5432    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌─────────────────┐
-                       │     Redis       │
-                       │   (WebSocket)   │
-                       │   Port: 6379    │
-                       └─────────────────┘
-```
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [GitHub Setup](#github-setup)
+- [Production Server Setup](#production-server-setup)
+- [Deployment Options](#deployment-options)
+- [Environment Configuration](#environment-configuration)
+- [Manual Deployment](#manual-deployment)
+- [Troubleshooting](#troubleshooting)
+- [Rollback Procedures](#rollback-procedures)
+- [Security Considerations](#security-considerations)
 
-## Quick Start
+## Overview
 
-### Prerequisites
+The deployment system uses:
+- **GitHub Actions**: Automatically builds Docker images on git push
+- **GitHub Container Registry (ghcr.io)**: Stores built images (FREE)
+- **Production Server**: Pulls and runs the latest images
+- **Zero-downtime deployments**: Rolling updates with health checks
 
-- Docker and Docker Compose
-- Node.js 18+ (for development)
-- Python 3.13+ (for development)
+## Prerequisites
 
-### 1. Clone and Setup
+### GitHub Repository
+- Public repository (for free GitHub Actions minutes)
+- Admin access to repository settings
+
+### Production Server
+- Ubuntu/Debian/CentOS server with Docker installed
+- SSH access with sudo privileges
+- Internet connectivity
+- At least 2GB RAM, 10GB disk space
+
+## GitHub Setup
+
+### 1. Create GitHub Personal Access Token
+
+1. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Click "Generate new token (classic)"
+3. Give it a name: "OlgFeast Deployment"
+4. Select scopes:
+   - ✅ `write:packages` (to push to GitHub Container Registry)
+   - ✅ `read:packages` (to pull from GitHub Container Registry)
+   - ✅ `repo` (if using private repository)
+5. Click "Generate token"
+6. **Copy the token immediately** (you won't see it again)
+
+### 2. Add Repository Secrets
+
+1. Go to your repository → Settings → Secrets and variables → Actions
+2. Click "New repository secret"
+3. Add these secrets:
+
+| Secret Name | Value | Description |
+|-------------|-------|-------------|
+| `GHCR_TOKEN` | Your PAT token | For pushing to ghcr.io |
+| `GHCR_OWNER` | Your GitHub username | Used in image names |
+| `DEPLOY_HOST` | Your server IP/domain | (Optional) For SSH deployment |
+| `DEPLOY_KEY` | SSH private key | (Optional) For SSH deployment |
+
+### 3. Enable GitHub Container Registry
+
+1. Go to your repository → Settings → Actions → General
+2. Under "Workflow permissions", select "Read and write permissions"
+3. Check "Allow GitHub Actions to create and approve pull requests"
+
+## Production Server Setup
+
+### 1. Install Docker and Docker Compose
 
 ```bash
-git clone <repository-url>
+# Ubuntu/Debian
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Logout and login again for group changes to take effect
+```
+
+### 2. Clone Repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/olgFeast.git
 cd olgFeast
-cp env.example .env
-# Edit .env with your configuration
 ```
 
-### 2. Deploy with Docker
+### 3. Create Production Environment File
 
 ```bash
-# Make deployment script executable
-chmod +x deploy.sh
+# Copy the template
+cp docker.env docker.prod.env
 
-# Deploy to development
-./deploy.sh development
-
-# Deploy to production
-./deploy.sh production
+# Edit with production values
+nano docker.prod.env
 ```
 
-### 3. Access the Application
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-- **Admin Panel**: http://localhost:8000/admin
-
-## Development Setup
-
-### Backend (FastAPI)
+**Required Environment Variables:**
 
 ```bash
-cd fastapi_app
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run development server
-python start_dev.py
-```
-
-### Frontend (React)
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm start
-```
-
-## Production Deployment
-
-### Docker Compose
-
-The application uses Docker Compose for orchestration:
-
-```yaml
-# docker-compose.yml
-services:
-  - PostgreSQL (Database)
-  - Redis (WebSocket channels)
-  - FastAPI (Backend API)
-  - React (Frontend SPA)
-```
-
-### Environment Configuration
-
-Create `.env` file with production settings:
-
-```env
 # Database
-DATABASE_URL=postgresql://user:password@db:5432/olgfeast
+POSTGRES_PASSWORD=your_secure_database_password
+POSTGRES_USER=olgfeast
+POSTGRES_DB=olgfeast
 
 # Redis
-REDIS_URL=redis://redis:6379
+REDIS_PASSWORD=your_secure_redis_password
 
 # Security
-SECRET_KEY=your-super-secret-production-key
+SECRET_KEY=your_very_secure_secret_key_at_least_32_characters
+
+# Environment
 DEBUG=false
+ENVIRONMENT=production
 
-# CORS
-ALLOWED_HOSTS=["yourdomain.com", "api.yourdomain.com"]
+# GitHub Container Registry
+GHCR_OWNER=your_github_username
 ```
 
-### SSL/HTTPS Setup
-
-For production, configure SSL certificates:
-
-```nginx
-# nginx.conf
-server {
-    listen 443 ssl;
-    server_name yourdomain.com;
-    
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-    
-    location / {
-        proxy_pass http://frontend:80;
-    }
-    
-    location /api/ {
-        proxy_pass http://backend:8000;
-    }
-}
-```
-
-## Testing
-
-### Backend Tests
+### 4. Login to GitHub Container Registry
 
 ```bash
-cd fastapi_app
-
-# Run all tests
-pytest tests/ -v
-
-# Run with coverage
-pytest tests/ --cov=app --cov-report=html
-
-# Run performance tests
-pytest tests/test_performance.py -v -s
+# Login to ghcr.io (you'll need your GitHub username and PAT)
+echo "YOUR_GITHUB_PAT_TOKEN" | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 ```
 
-### Frontend Tests
+## Deployment Options
 
-```bash
-cd frontend
+### Option 1: Automatic Deployment with Watchtower (Recommended)
 
-# Run tests
-npm test
+Watchtower automatically checks for new images and updates containers.
 
-# Run with coverage
-npm test -- --coverage
-
-# Run linting
-npm run lint
-```
-
-### Integration Tests
-
-```bash
-# Start test environment
-docker-compose -f docker-compose.test.yml up -d
-
-# Run integration tests
-docker-compose exec test-backend pytest tests/integration/ -v
-
-# Cleanup
-docker-compose -f docker-compose.test.yml down -v
-```
-
-## Monitoring and Logging
-
-### Health Checks
-
-All services include health check endpoints:
-
-- **Backend**: `GET /health`
-- **Frontend**: `GET /`
-- **Database**: PostgreSQL health check
-- **Redis**: Redis ping
-
-### Logging
-
-```bash
-# View logs
-docker-compose logs -f
-
-# View specific service logs
-docker-compose logs -f backend
-docker-compose logs -f frontend
-```
-
-### Performance Monitoring
-
-The application includes performance tests that monitor:
-
-- API response times
-- Concurrent request handling
-- Memory usage
-- Database query performance
-
-## Scaling
-
-### Horizontal Scaling
+1. **Enable Watchtower** in `docker-compose.prod.yml`:
 
 ```yaml
-# docker-compose.scale.yml
-services:
-  backend:
-    deploy:
-      replicas: 3
-  
-  frontend:
-    deploy:
-      replicas: 2
+# Uncomment the watchtower section
+watchtower:
+  image: containrrr/watchtower
+  container_name: olgfeast_watchtower
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /etc/localtime:/etc/localtime:ro
+  environment:
+    - WATCHTOWER_POLL_INTERVAL=300  # Check every 5 minutes
+    - WATCHTOWER_CLEANUP=true       # Remove old images
+    - WATCHTOWER_INCLUDE_RESTARTING=true
+    - WATCHTOWER_REVIVE_STOPPED=false
+    - WATCHTOWER_LABEL_ENABLE=true
+  restart: unless-stopped
+  networks:
+    - olgfeast_network
 ```
 
-### Load Balancing
-
-```nginx
-# nginx.conf
-upstream backend {
-    server backend1:8000;
-    server backend2:8000;
-    server backend3:8000;
-}
-
-server {
-    location /api/ {
-        proxy_pass http://backend;
-    }
-}
-```
-
-## Database Management
-
-### Migrations
+2. **Start the application:**
 
 ```bash
-# Create migration
-docker-compose exec backend alembic revision --autogenerate -m "Description"
-
-# Apply migrations
-docker-compose exec backend alembic upgrade head
-
-# Rollback migration
-docker-compose exec backend alembic downgrade -1
+./deploy.sh deploy
 ```
 
-### Backup and Restore
+### Option 2: Manual Deployment Script
+
+Use the provided `deploy.sh` script for manual deployments:
 
 ```bash
-# Backup database
-docker-compose exec db pg_dump -U olgfeast olgfeast > backup.sql
+# Full deployment
+./deploy.sh deploy
 
-# Restore database
-docker-compose exec -T db psql -U olgfeast olgfeast < backup.sql
+# Pull latest images only
+./deploy.sh pull
+
+# Check status
+./deploy.sh status
+
+# Run health checks
+./deploy.sh health
+
+# Clean up old images
+./deploy.sh cleanup
 ```
 
-## Security
+### Option 3: Webhook Deployment (Advanced)
 
-### Environment Variables
+Set up a webhook endpoint that triggers deployment when GitHub Actions completes.
 
-Never commit sensitive data:
+## Environment Configuration
+
+### Production Environment File (`docker.prod.env`)
 
 ```bash
-# .env (never commit)
-SECRET_KEY=your-secret-key
-DATABASE_URL=postgresql://user:password@host:port/db
-REDIS_URL=redis://password@host:port
+# Database Configuration
+POSTGRES_PASSWORD=super_secure_database_password_here
+POSTGRES_USER=olgfeast
+POSTGRES_DB=olgfeast
+
+# Redis Configuration
+REDIS_PASSWORD=super_secure_redis_password_here
+
+# Application Security
+SECRET_KEY=your_very_secure_secret_key_at_least_32_characters_long
+DEBUG=false
+ENVIRONMENT=production
+
+# GitHub Container Registry
+GHCR_OWNER=your_github_username
+
+# Optional: Cleanup settings
+CLEANUP_UNUSED_IMAGES=false
 ```
 
-### HTTPS Configuration
+### Security Best Practices
 
-```nginx
-# Redirect HTTP to HTTPS
-server {
-    listen 80;
-    return 301 https://$server_name$request_uri;
-}
+1. **Use strong passwords** (minimum 32 characters)
+2. **Generate secure SECRET_KEY**:
+   ```bash
+   python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+   ```
+3. **Restrict file permissions**:
+   ```bash
+   chmod 600 docker.prod.env
+   ```
+4. **Use HTTPS** in production (set up reverse proxy with SSL)
 
-server {
-    listen 443 ssl;
-    # SSL configuration
-}
+## Manual Deployment
+
+### Initial Deployment
+
+```bash
+# 1. Ensure you're in the project directory
+cd /path/to/olgFeast
+
+# 2. Set environment variable
+export GHCR_OWNER=your_github_username
+
+# 3. Run deployment
+./deploy.sh deploy
 ```
 
-### CORS Configuration
+### Subsequent Deployments
 
-```python
-# FastAPI CORS settings
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://yourdomain.com"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-)
+After pushing to main branch:
+
+```bash
+# Option 1: Automatic (if using Watchtower)
+# Nothing needed - updates automatically
+
+# Option 2: Manual
+./deploy.sh deploy
+
+# Option 3: Just pull images
+./deploy.sh pull
 ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Port conflicts**: Change ports in docker-compose.yml
-2. **Database connection**: Check DATABASE_URL in .env
-3. **Redis connection**: Check REDIS_URL in .env
-4. **CORS errors**: Update ALLOWED_HOSTS in .env
-
-### Debug Mode
-
-```bash
-# Enable debug mode
-DEBUG=true docker-compose up
-
-# View detailed logs
-docker-compose logs -f --tail=100
+#### 1. Authentication Failed
+```
+Error: unauthorized: authentication required
 ```
 
-### Performance Issues
+**Solution:**
+```bash
+# Re-login to GitHub Container Registry
+echo "YOUR_GITHUB_PAT_TOKEN" | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+```
+
+#### 2. Image Not Found
+```
+Error: manifest for ghcr.io/username/olgfeast-backend:latest not found
+```
+
+**Solutions:**
+- Check if GitHub Actions workflow completed successfully
+- Verify `GHCR_OWNER` environment variable is correct
+- Check if images are public or you have access permissions
+
+#### 3. Health Check Failed
+```
+[ERROR] Health checks failed after 30 attempts
+```
+
+**Solutions:**
+```bash
+# Check container logs
+docker-compose -f docker-compose.prod.yml logs backend
+docker-compose -f docker-compose.prod.yml logs frontend
+
+# Check if containers are running
+docker-compose -f docker-compose.prod.yml ps
+
+# Restart specific service
+docker-compose -f docker-compose.prod.yml restart backend
+```
+
+#### 4. Database Connection Issues
+```
+sqlalchemy.exc.OperationalError: connection to server failed
+```
+
+**Solutions:**
+```bash
+# Check database container
+docker-compose -f docker-compose.prod.yml logs db
+
+# Verify database is accessible
+docker-compose -f docker-compose.prod.yml exec db pg_isready -U olgfeast -d olgfeast
+```
+
+### Debugging Commands
 
 ```bash
-# Run performance tests
-docker-compose exec backend pytest tests/test_performance.py -v -s
+# View all container logs
+docker-compose -f docker-compose.prod.yml logs
 
-# Monitor resource usage
+# View specific service logs
+docker-compose -f docker-compose.prod.yml logs backend
+docker-compose -f docker-compose.prod.yml logs frontend
+docker-compose -f docker-compose.prod.yml logs db
+
+# Check container status
+docker-compose -f docker-compose.prod.yml ps
+
+# Execute commands in containers
+docker-compose -f docker-compose.prod.yml exec backend bash
+docker-compose -f docker-compose.prod.yml exec db psql -U olgfeast -d olgfeast
+
+# Check resource usage
 docker stats
 
-# Check database performance
-docker-compose exec db psql -U olgfeast olgfeast -c "EXPLAIN ANALYZE SELECT * FROM orders;"
+# View image information
+docker images | grep olgfeast
 ```
 
-## CI/CD Pipeline
+## Rollback Procedures
 
-The application includes a GitHub Actions CI/CD pipeline:
-
-1. **Code Quality**: Linting, formatting, type checking
-2. **Testing**: Unit tests, integration tests, performance tests
-3. **Security**: Vulnerability scanning
-4. **Deployment**: Automated deployment to staging/production
-
-### Pipeline Stages
-
-```yaml
-# .github/workflows/ci.yml
-jobs:
-  - backend-tests
-  - frontend-tests
-  - integration-tests
-  - security-scan
-  - deploy-staging (develop branch)
-  - deploy-production (main branch)
-```
-
-## Maintenance
-
-### Updates
+### Automatic Rollback
 
 ```bash
-# Update dependencies
-cd fastapi_app && pip install -r requirements.txt --upgrade
-cd frontend && npm update
-
-# Rebuild containers
-docker-compose up -d --build
+# Rollback to previous version
+./deploy.sh rollback
 ```
 
-### Cleanup
+### Manual Rollback
 
 ```bash
-# Remove unused containers
-docker-compose down --rmi all --volumes --remove-orphans
+# 1. Stop current containers
+docker-compose -f docker-compose.prod.yml down
 
-# Clean Docker cache
-docker system prune -a
+# 2. Find previous image tag
+docker images | grep olgfeast-backend
+
+# 3. Update docker-compose.prod.yml to use specific tag
+# Change: ghcr.io/username/olgfeast-backend:latest
+# To: ghcr.io/username/olgfeast-backend:main-abc1234
+
+# 4. Start with previous version
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Emergency Rollback
+
+```bash
+# Quick rollback using backup
+cp backups/docker-compose.prod.yml.backup.YYYYMMDD_HHMMSS docker-compose.prod.yml
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## Security Considerations
+
+### 1. Environment Variables
+- Never commit `docker.prod.env` to git
+- Use strong, unique passwords
+- Rotate secrets regularly
+
+### 2. Network Security
+- Use firewall to restrict access
+- Consider using reverse proxy (nginx/traefik)
+- Enable HTTPS with SSL certificates
+
+### 3. Container Security
+- Run containers as non-root user
+- Regularly update base images
+- Scan images for vulnerabilities
+
+### 4. Access Control
+- Limit SSH access to production server
+- Use SSH keys instead of passwords
+- Monitor access logs
+
+### 5. Backup Strategy
+- Regular database backups
+- Store backups in secure location
+- Test backup restoration procedures
+
+## Monitoring and Maintenance
+
+### Health Monitoring
+
+```bash
+# Check application health
+curl http://localhost:8000/health
+curl http://localhost:3000/
+
+# Monitor logs
+docker-compose -f docker-compose.prod.yml logs -f
+```
+
+### Regular Maintenance
+
+```bash
+# Weekly cleanup
+./deploy.sh cleanup
+
+# Check for updates
+docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.CreatedAt}}" | grep olgfeast
+
+# Update base images (when needed)
+docker-compose -f docker-compose.prod.yml pull
+```
+
+### Log Management
+
+```bash
+# Configure log rotation in docker-compose.prod.yml
+logging:
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
 ```
 
 ## Support
 
 For issues and questions:
+1. Check this documentation
+2. Review GitHub Actions logs
+3. Check container logs
+4. Open an issue in the repository
 
-1. Check the logs: `docker-compose logs -f`
-2. Run tests: `pytest tests/ -v`
-3. Check performance: `pytest tests/test_performance.py -v -s`
-4. Review documentation: API docs at `/docs`
+---
 
-## Performance Benchmarks
-
-Based on performance tests:
-
-- **API Response Time**: < 100ms average
-- **Concurrent Requests**: 50 requests in < 250ms
-- **Cart Operations**: < 50ms each
-- **Order Creation**: < 100ms
-- **Authentication**: < 20ms
-- **Memory Usage**: < 50MB increase for 100 requests
-
-## FastAPI Architecture
-
-This FastAPI version provides significant improvements:
-
-- **Performance**: 3-5x faster API responses
-- **Real-time**: Native WebSocket support
-- **Type Safety**: Full TypeScript/type hint coverage
-- **Modern Stack**: React SPA with modern tooling
-- **Scalability**: Better horizontal scaling capabilities
-- **Developer Experience**: Hot reload, automatic API docs
+**Remember:** Always test deployments in a staging environment before production!

@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCart } from '../../contexts/CartContext';
 import { apiService } from '../../services/api';
-import { CartSummary } from '../../types';
 import { CreditCard, User, CheckCircle } from 'lucide-react';
 
 const CheckoutForm: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const { cart, isLoading: cartLoading, refreshCart } = useCart();
   const navigate = useNavigate();
-  const [cart, setCart] = useState<CartSummary | null>(null);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [error, setError] = useState('');
@@ -20,25 +19,11 @@ const CheckoutForm: React.FC = () => {
       return;
     }
     
-    fetchCart();
-  }, [isAuthenticated, navigate]);
-
-  const fetchCart = async () => {
-    try {
-      const response = await apiService.getCartItems();
-      setCart(response.data);
-      
-      if (response.data.total_items === 0) {
-        navigate('/cart');
-        return;
-      }
-    } catch (error) {
-      setError('Failed to load cart');
-      console.error('Error fetching cart:', error);
-    } finally {
-      setLoading(false);
+    // Redirect to cart if cart is empty
+    if (cart && cart.total_items === 0) {
+      navigate('/cart');
     }
-  };
+  }, [isAuthenticated, cart, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +38,8 @@ const CheckoutForm: React.FC = () => {
 
     try {
       await apiService.createOrder({ customer_name: customerName.trim() });
+      // Refresh cart to clear it after successful order creation
+      await refreshCart();
       navigate('/orders');
     } catch (error: any) {
       setError(error.response?.data?.detail || 'Failed to place order');
@@ -65,7 +52,7 @@ const CheckoutForm: React.FC = () => {
     return null;
   }
 
-  if (loading) {
+  if (cartLoading) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
