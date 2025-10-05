@@ -149,15 +149,19 @@ npm test
 
 ### Automatic CI/CD Deployment
 
-OlgFeast includes a complete CI/CD pipeline using GitHub Actions and GitHub Container Registry for automatic deployments.
+OlgFeast includes a complete CI/CD pipeline using GitHub Actions and GitHub Container Registry for automatic deployments with **multi-architecture support** (x86 and ARM).
 
 📖 **For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
 
 **Quick Setup:**
 1. Set up GitHub Personal Access Token with package permissions
-2. Add repository secrets (`GHCR_TOKEN`, `GHCR_OWNER`)
+2. Add repository secrets (`GITHUB_TOKEN`, `GITHUB_OWNER`)
 3. Push to main branch → Automatic build and deployment
 4. Deploy to production server using provided scripts
+
+**Supported Platforms:**
+- ✅ **x86_64 (amd64)**: Most servers, cloud providers
+- ✅ **ARM64**: Raspberry Pi, ARM servers, Apple Silicon Macs
 
 **Features:**
 - ✅ **Zero-cost** deployment (GitHub Actions + GHCR free tiers)

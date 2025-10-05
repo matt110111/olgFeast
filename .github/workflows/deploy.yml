@@ -30,7 +30,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata for backend
         id: meta-backend
@@ -48,6 +48,7 @@ jobs:
         with:
           context: ./fastapi_app
           file: ./fastapi_app/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta-backend.outputs.tags }}
           labels: ${{ steps.meta-backend.outputs.labels }}
@@ -70,6 +71,7 @@ jobs:
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
@@ -79,12 +81,15 @@ jobs:
       - name: Notify deployment (if on main branch)
         if: github.ref == 'refs/heads/main'
         run: |
-          echo "🚀 Images built and pushed successfully!"
+          echo "🚀 Multi-architecture images built and pushed successfully!"
+          echo "✅ Supported platforms: linux/amd64, linux/arm64"
+          echo ""
+          echo "📦 Images created:"
           echo "Backend: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.sha }}"
           echo "Frontend: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}"
           echo ""
           echo "📋 To deploy to production:"
-          echo "1. Pull latest images on your server"
+          echo "1. Pull latest images on your server (works on x86 and ARM!)"
           echo "2. Run: docker-compose -f docker-compose.prod.yml up -d"
           echo "3. Or use the deploy.sh script for automated deployment"
 

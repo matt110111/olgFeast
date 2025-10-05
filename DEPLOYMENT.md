@@ -20,7 +20,8 @@ This guide covers setting up automatic deployment using GitHub Actions and GitHu
 The deployment system uses:
 - **GitHub Actions**: Automatically builds Docker images on git push
 - **GitHub Container Registry (ghcr.io)**: Stores built images (FREE)
-- **Production Server**: Pulls and runs the latest images
+- **Multi-architecture support**: Images built for both x86 (amd64) and ARM (arm64) devices
+- **Production Server**: Pulls and runs the latest images (works on Raspberry Pi, servers, etc.)
 - **Zero-downtime deployments**: Rolling updates with health checks
 
 ## Prerequisites
@@ -34,6 +35,13 @@ The deployment system uses:
 - SSH access with sudo privileges
 - Internet connectivity
 - At least 2GB RAM, 10GB disk space
+
+### Supported Architectures
+The Docker images are built for multiple architectures:
+- **linux/amd64**: x86_64 servers, most cloud providers
+- **linux/arm64**: ARM-based servers, Raspberry Pi 4+, Apple Silicon Macs
+
+Your deployment will automatically use the correct architecture for your server.
 
 ## GitHub Setup
 
@@ -57,8 +65,8 @@ The deployment system uses:
 
 | Secret Name | Value | Description |
 |-------------|-------|-------------|
-| `GHCR_TOKEN` | Your PAT token | For pushing to ghcr.io |
-| `GHCR_OWNER` | Your GitHub username | Used in image names |
+| `GITHUB_TOKEN` | Your PAT token | For pushing to ghcr.io |
+| `GITHUB_OWNER` | Your GitHub username | Used in image names |
 | `DEPLOY_HOST` | Your server IP/domain | (Optional) For SSH deployment |
 | `DEPLOY_KEY` | SSH private key | (Optional) For SSH deployment |
 
@@ -121,7 +129,7 @@ DEBUG=false
 ENVIRONMENT=production
 
 # GitHub Container Registry
-GHCR_OWNER=your_github_username
+GITHUB_OWNER=your_github_username
 ```
 
 ### 4. Login to GitHub Container Registry
@@ -208,7 +216,7 @@ DEBUG=false
 ENVIRONMENT=production
 
 # GitHub Container Registry
-GHCR_OWNER=your_github_username
+GITHUB_OWNER=your_github_username
 
 # Optional: Cleanup settings
 CLEANUP_UNUSED_IMAGES=false
@@ -236,7 +244,7 @@ CLEANUP_UNUSED_IMAGES=false
 cd /path/to/olgFeast
 
 # 2. Set environment variable
-export GHCR_OWNER=your_github_username
+export GITHUB_OWNER=your_github_username
 
 # 3. Run deployment
 ./deploy.sh deploy
@@ -279,7 +287,7 @@ Error: manifest for ghcr.io/username/olgfeast-backend:latest not found
 
 **Solutions:**
 - Check if GitHub Actions workflow completed successfully
-- Verify `GHCR_OWNER` environment variable is correct
+- Verify `GITHUB_OWNER` environment variable is correct
 - Check if images are public or you have access permissions
 
 #### 3. Health Check Failed
