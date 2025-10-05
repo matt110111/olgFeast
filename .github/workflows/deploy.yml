@@ -8,8 +8,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME_BACKEND: olgfeast-backend
-  IMAGE_NAME_FRONTEND: olgfeast-frontend
+  IMAGE_NAME_BACKEND: matt110111/olgfeast-backend
+  IMAGE_NAME_FRONTEND: matt110111/olgfeast-frontend
 
 jobs:
   build-and-push:
@@ -17,6 +17,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -25,12 +26,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Container Registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN || github.token }}
+          password: ${{ secrets.GHCR2_TOKEN }}
 
       - name: Extract metadata for backend
         id: meta-backend
@@ -57,6 +58,7 @@ jobs:
             org.opencontainers.image.licenses=MIT
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
 
       - name: Extract metadata for frontend
         id: meta-frontend
@@ -83,6 +85,7 @@ jobs:
             org.opencontainers.image.licenses=MIT
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
 
       - name: Notify deployment (if on main branch)
         if: github.ref == 'refs/heads/main'
