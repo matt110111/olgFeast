@@ -136,7 +136,7 @@ const KitchenDisplay: React.FC = () => {
       // Fallback to REST API only
       fetchOrders();
     }
-  }, []); // Remove fetchOrders dependency to prevent infinite re-renders
+  }, [fetchOrders]);
 
   useEffect(() => {
     // Initial data fetch

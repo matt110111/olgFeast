@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { apiService } from '../services/api';
-import { CartSummary, CartItem } from '../types';
+import { CartSummary } from '../types';
 
 interface CartContextType {
   cart: CartSummary | null;

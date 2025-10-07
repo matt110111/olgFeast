@@ -154,7 +154,7 @@ const AdminDashboard: React.FC = () => {
       // Fallback to REST API only
       fetchData();
     }
-  }, []); // Remove fetchData dependency to prevent infinite re-renders
+  }, [fetchData]);
 
   useEffect(() => {
     // Initial data fetch
@@ -166,12 +166,7 @@ const AdminDashboard: React.FC = () => {
     return () => {
       websocketService.disconnect('/ws/admin/dashboard');
     };
-  }, [currentPage]);
-
-  // Separate effect for WebSocket setup
-  useEffect(() => {
-    setupWebSocket();
-  }, []);
+  }, [currentPage, fetchData, setupWebSocket]);
 
   const handleStatusUpdate = async (orderId: number, newStatus: OrderStatus) => {
     try {

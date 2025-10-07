@@ -6,7 +6,6 @@ import {
   ArrowLeft, 
   Clock, 
   Calendar, 
-  User, 
   Package, 
   DollarSign, 
   CheckCircle,
@@ -27,7 +26,7 @@ interface OrderItem {
   quantity: number;
 }
 
-interface OrderDetail {
+interface Order {
   id: number;
   display_id: number;
   ref_code: string;
@@ -45,7 +44,7 @@ interface OrderDetail {
 const OrderDetail: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
