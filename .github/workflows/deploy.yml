@@ -8,8 +8,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME_BACKEND: matt110111/olgfeast-backend
-  IMAGE_NAME_FRONTEND: matt110111/olgfeast-frontend
+  IMAGE_NAME_BACKEND: olgfeast-backend
+  IMAGE_NAME_FRONTEND: olgfeast-frontend
 
 jobs:
   build-and-push:
@@ -39,10 +39,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
+            type=sha,prefix=sha-
 
       - name: Build and push backend image
         uses: docker/build-push-action@v5
@@ -66,10 +64,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
+            type=sha,prefix=sha-
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
@@ -94,8 +90,10 @@ jobs:
           echo "✅ Supported platforms: linux/amd64, linux/arm64"
           echo ""
           echo "📦 Images created:"
-          echo "Backend: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.sha }}"
-          echo "Frontend: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}"
+          echo "Backend: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}:latest"
+          echo "Backend: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}:sha-${{ github.sha }}"
+          echo "Frontend: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}:latest"
+          echo "Frontend: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}:sha-${{ github.sha }}"
           echo ""
           echo "📋 To deploy to production:"
           echo "1. Pull latest images on your server (works on x86 and ARM!)"

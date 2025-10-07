@@ -277,8 +277,8 @@ main() {
             echo "  health   - Run health checks"
             echo ""
             echo "Environment Variables:"
-            echo "  GHCR_OWNER - Your GitHub username/organization (required)"
-            echo "  GHCR_TOKEN   - GitHub Container Registry token (optional)"
+            echo "  GHCR_OWNER - Your GitHub username (default: matt110111)"
+            echo "  GHCR_TOKEN - GitHub Container Registry token (optional for public images)"
             echo "  CLEANUP_UNUSED_IMAGES - Set to 'true' to remove unused images (default: false)"
             exit 1
             ;;
