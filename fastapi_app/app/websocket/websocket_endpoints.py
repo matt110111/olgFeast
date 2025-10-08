@@ -322,11 +322,19 @@ def calculate_waiting_time(order: Order) -> int:
     
     now = datetime.utcnow()
     
+    # Make sure both datetimes are naive (no timezone info)
+    if order.date_ordered.tzinfo is not None:
+        order_date = order.date_ordered.replace(tzinfo=None)
+    else:
+        order_date = order.date_ordered
+    
     if order.status == OrderStatus.PENDING:
-        return int((now - order.date_ordered).total_seconds() / 60)
+        return int((now - order_date).total_seconds() / 60)
     elif order.status == OrderStatus.PREPARING and order.date_preparing:
-        return int((now - order.date_preparing).total_seconds() / 60)
+        prep_date = order.date_preparing.replace(tzinfo=None) if order.date_preparing.tzinfo else order.date_preparing
+        return int((now - prep_date).total_seconds() / 60)
     elif order.status == OrderStatus.READY and order.date_ready:
-        return int((now - order.date_ready).total_seconds() / 60)
+        ready_date = order.date_ready.replace(tzinfo=None) if order.date_ready.tzinfo else order.date_ready
+        return int((now - ready_date).total_seconds() / 60)
     else:
         return 0
