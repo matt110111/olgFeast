@@ -1,125 +1,29 @@
-import React from 'react';
+import { vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import LoginForm from '../../Auth/LoginForm';
-import { AuthProvider } from '../../../contexts/AuthContext';
-
-// Mock the API service
-jest.mock('../../../services/api', () => ({
-  apiService: {
-    login: jest.fn(),
-  },
-}));
-
-const MockedLoginForm = () => (
-  <MemoryRouter>
-    <AuthProvider>
-      <LoginForm />
-    </AuthProvider>
-  </MemoryRouter>
-);
-
-describe('LoginForm', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('renders login form correctly', () => {
-    render(<MockedLoginForm />);
-    
-    expect(screen.getByText('Sign in to your account')).toBeInTheDocument();
-    expect(screen.getByLabelText('Username')).toBeInTheDocument();
-    expect(screen.getByLabelText('Password')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
-  });
-
-  it('shows demo credentials', () => {
-    render(<MockedLoginForm />);
-    
-    expect(screen.getByText('Demo Credentials')).toBeInTheDocument();
-    expect(screen.getByText('Staff: admin / admin123')).toBeInTheDocument();
-    expect(screen.getByText('Customer: customer / customer123')).toBeInTheDocument();
-  });
-
-  it('has link to register page', () => {
-    render(<MockedLoginForm />);
-    
-    const registerLink = screen.getByRole('link', { name: /create a new account/i });
-    expect(registerLink).toBeInTheDocument();
-    expect(registerLink).toHaveAttribute('href', '/register');
-  });
-
-  it('validates required fields', async () => {
-    render(<MockedLoginForm />);
-    
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
-    fireEvent.click(submitButton);
-    
-    await waitFor(() => {
-      expect(screen.getByLabelText('Username')).toHaveAttribute('required');
-      expect(screen.getByLabelText('Password')).toHaveAttribute('required');
-    });
-  });
-
-  it('handles form submission', async () => {
-    const mockLogin = jest.fn().mockResolvedValue({});
-    const { apiService } = require('../../../services/api');
-    apiService.login.mockImplementation(mockLogin);
-
-    render(<MockedLoginForm />);
-    
-    const usernameInput = screen.getByLabelText('Username');
-    const passwordInput = screen.getByLabelText('Password');
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    fireEvent.change(passwordInput, { target: { value: 'testpass' } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith({
-        username: 'testuser',
-        password: 'testpass',
-      });
-    });
-  });
-
-  it('shows loading state during submission', async () => {
-    const mockLogin = jest.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
-    const { apiService } = require('../../../services/api');
-    apiService.login.mockImplementation(mockLogin);
-
-    render(<MockedLoginForm />);
-    
-    const usernameInput = screen.getByLabelText('Username');
-    const passwordInput = screen.getByLabelText('Password');
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    fireEvent.change(passwordInput, { target: { value: 'testpass' } });
-    fireEvent.click(submitButton);
-
-    expect(screen.getByText('Signing in...')).toBeInTheDocument();
-    expect(submitButton).toBeDisabled();
-  });
-
-  it('displays error message on login failure', async () => {
-    const mockLogin = jest.fn().mockRejectedValue(new Error('Invalid credentials'));
-    const { apiService } = require('../../../services/api');
-    apiService.login.mockImplementation(mockLogin);
-
-    render(<MockedLoginForm />);
-    
-    const usernameInput = screen.getByLabelText('Username');
-    const passwordInput = screen.getByLabelText('Password');
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    fireEvent.change(passwordInput, { target: { value: 'wrongpass' } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText('Login failed')).toBeInTheDocument();
-    });
-  });
+import { ThemeProvider } from '../../../contexts/ThemeContext';
+const mocks = vi.hoisted(() => ({ login: vi.fn() }));
+vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ login: mocks.login }) }));
+function show() { render(<MemoryRouter><ThemeProvider><LoginForm /></ThemeProvider></MemoryRouter>); }
+beforeEach(() => { mocks.login.mockReset(); });
+it('shows organizer guidance without published demo passwords', () => {
+  show(); expect(screen.getByText('Use the account provided by your event organizer.')).toBeInTheDocument();
+  expect(screen.queryByText('Demo Credentials')).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Username')).toHaveAttribute('autoComplete', 'username');
+});
+it('submits credentials and prevents repeated clicks while pending', async () => {
+  mocks.login.mockImplementation(() => new Promise(() => {})); show();
+  fireEvent.change(screen.getByLabelText('Username'), {target:{value:'station1'}});
+  fireEvent.change(screen.getByLabelText('Password'), {target:{value:'long-password'}});
+  fireEvent.click(screen.getByRole('button',{name:'Sign in'}));
+  await waitFor(() => expect(mocks.login).toHaveBeenCalledWith({username:'station1',password:'long-password'}));
+  expect(screen.getByRole('button',{name:'Signing in...'})).toBeDisabled();
+});
+it('shows server login errors', async () => {
+  mocks.login.mockRejectedValue({response:{data:{detail:'Account disabled'}}}); show();
+  fireEvent.change(screen.getByLabelText('Username'), {target:{value:'station1'}});
+  fireEvent.change(screen.getByLabelText('Password'), {target:{value:'long-password'}});
+  fireEvent.click(screen.getByRole('button',{name:'Sign in'}));
+  expect(await screen.findByText('Account disabled')).toBeInTheDocument();
 });

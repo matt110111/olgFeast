@@ -85,60 +85,18 @@ class OrderService:
             logger.error(f"Failed to broadcast message: {e}")
     
     def create_order(self, user_id: int, order_data: OrderCreate) -> Optional[Order]:
-        """Create a new order from cart items.
-        
-        Args:
-            user_id: ID of the user creating the order.
-            order_data: Order creation data containing customer name.
-            
-        Returns:
-            Order: The created order, or None if cart is empty.
-        """
-        try:
-            # Check if user has items in cart
-            cart = self.db.query(Cart).filter(Cart.user_id == user_id).first()
-            if not cart or not cart.items:
-                logger.warning(f"User {user_id} attempted to create order with empty cart")
-                return None
-            
-            # Generate unique reference code and display ID
-            ref_code = self._ensure_unique_ref_code()
-            display_id = self._get_next_display_id()
-            
-            # Create order
-            order = Order(
-                display_id=display_id,
-                ref_code=ref_code,
-                user_id=user_id,
-                customer_name=order_data.customer_name,
-                status=OrderStatus.PENDING
-            )
-            self.db.add(order)
-            self.db.commit()
-            self.db.refresh(order)
-            
-            # Add cart items to order
-            self._add_cart_items_to_order(order.id, cart.items)
-            
-            # Clear the cart
-            self._clear_user_cart(cart.id)
-            
-            self.db.commit()
-            self.db.refresh(order)
-            
-            # Broadcast new order
-            asyncio.run(self._broadcast_async(
-                self.websocket_service.broadcast_new_order(order)
-            ))
-            
-            logger.info(f"Order #{order.display_id} ({order.ref_code}) created successfully for user {user_id}")
-            return order
-            
-        except Exception as e:
-            self.db.rollback()
-            logger.error(f"Failed to create order for user {user_id}: {e}")
+        from .checkout import checkout
+        cart = self.db.query(Cart).filter_by(user_id=user_id).with_for_update().first()
+        if order_data.checkout_key:
+            existing = self.db.query(Order).filter_by(user_id=user_id, checkout_key=order_data.checkout_key).first()
+            if existing:
+                return existing
+        if not cart or not cart.items:
             return None
-    
+        return checkout(self.db, user_id, order_data.customer_name,
+            [{'food_item_id': item.food_item_id, 'quantity': item.quantity} for item in cart.items],
+            order_data.checkout_key, cart=cart)
+
     def _add_cart_items_to_order(self, order_id: int, cart_items: List[CartItem]) -> None:
         """Add cart items to an order.
         
@@ -223,7 +181,7 @@ class OrderService:
         query = self.db.query(Order)
         
         if status:
-            query = query.filter(Order.status == status)
+            query = query.filter(Order.status == status, Order.voided_at.is_(None), Order.awaiting_tickets.is_(False))
         
         return query.order_by(Order.date_ordered.desc()).offset(skip).limit(limit).all()
     
@@ -243,6 +201,8 @@ class OrderService:
                 logger.warning(f"Attempted to update non-existent order {order_id}")
                 return None
             
+            if order.awaiting_tickets or order.voided_at:
+                return None
             old_status = order.status
             order.status = new_status
             
@@ -290,7 +250,7 @@ class OrderService:
         Returns:
             List[Order]: List of orders with the specified status, ordered by date (oldest first).
         """
-        return self.db.query(Order).filter(Order.status == status).order_by(
+        return self.db.query(Order).filter(Order.status == status, Order.voided_at.is_(None), Order.awaiting_tickets.is_(False)).order_by(
             Order.date_ordered
         ).all()
     
@@ -371,25 +331,25 @@ class OrderService:
         """Get counts of orders by status."""
         status_counts = {}
         for status in OrderStatus:
-            count = self.db.query(Order).filter(Order.status == status).count()
+            count = self.db.query(Order).filter(Order.status == status, Order.voided_at.is_(None), Order.awaiting_tickets.is_(False)).count()
             status_counts[status.value] = count
         return status_counts
     
     def _get_revenue_stats(self, time_ranges: Dict[str, datetime]) -> Dict[str, float]:
         """Get revenue statistics."""
-        completed_orders = self.db.query(Order).filter(Order.status == OrderStatus.COMPLETE)
+        completed_orders = self.db.query(Order).filter(Order.status == OrderStatus.COMPLETE, Order.voided_at.is_(None), Order.awaiting_tickets.is_(False))
         
         total_revenue = 0
         revenue_today = 0
         revenue_this_week = 0
         
         for order in completed_orders:
-            order_value = sum(item.food_item.value * item.quantity for item in order.order_items)
+            order_value = sum(float(item.unit_value) * item.quantity for item in order.order_items)
             total_revenue += order_value
             
-            if order.date_ordered >= time_ranges['last_24h']:
+            if order.date_ordered.replace(tzinfo=None) >= time_ranges['last_24h']:
                 revenue_today += order_value
-            if order.date_ordered >= time_ranges['last_7d']:
+            if order.date_ordered.replace(tzinfo=None) >= time_ranges['last_7d']:
                 revenue_this_week += order_value
         
         return {
@@ -400,7 +360,7 @@ class OrderService:
     
     def _get_timing_analytics(self) -> Dict[str, float]:
         """Get timing analytics for completed orders."""
-        completed_orders = self.db.query(Order).filter(Order.status == OrderStatus.COMPLETE)
+        completed_orders = self.db.query(Order).filter(Order.status == OrderStatus.COMPLETE, Order.voided_at.is_(None), Order.awaiting_tickets.is_(False))
         
         if completed_orders.count() == 0:
             return {'avg_total_time': 0}

@@ -1,12 +1,14 @@
+import { apiService } from '../../services/api';
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../AuthContext';
 
 // Mock the API service
-jest.mock('../../services/api', () => ({
+vi.mock('../../services/api', () => ({
   apiService: {
-    getCurrentUser: jest.fn(),
+    getCurrentUser: vi.fn(),
   },
 }));
 
@@ -33,14 +35,14 @@ const TestApp = () => (
 
 describe('AuthContext', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Clear localStorage
     localStorage.clear();
   });
 
   it('shows loading state initially', () => {
-    const { apiService } = require('../../services/api');
-    apiService.getCurrentUser.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+    localStorage.setItem('access_token','pending');
+    vi.mocked(apiService.getCurrentUser, { partial: true }).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
 
     render(<TestApp />);
     
@@ -48,8 +50,7 @@ describe('AuthContext', () => {
   });
 
   it('shows not authenticated when no token', async () => {
-    const { apiService } = require('../../services/api');
-    apiService.getCurrentUser.mockRejectedValue(new Error('No token'));
+    vi.mocked(apiService.getCurrentUser, { partial: true }).mockRejectedValue(new Error('No token'));
 
     render(<TestApp />);
 
@@ -73,8 +74,7 @@ describe('AuthContext', () => {
       created_at: '2025-01-01T00:00:00',
     };
 
-    const { apiService } = require('../../services/api');
-    apiService.getCurrentUser.mockResolvedValue({ data: mockUser });
+    vi.mocked(apiService.getCurrentUser, { partial: true }).mockResolvedValue({ data: mockUser });
 
     // Set token in localStorage
     localStorage.setItem('access_token', 'valid_token');
@@ -101,8 +101,7 @@ describe('AuthContext', () => {
       created_at: '2025-01-01T00:00:00',
     };
 
-    const { apiService } = require('../../services/api');
-    apiService.getCurrentUser.mockResolvedValue({ data: mockStaffUser });
+    vi.mocked(apiService.getCurrentUser, { partial: true }).mockResolvedValue({ data: mockStaffUser });
 
     localStorage.setItem('access_token', 'valid_token');
 
@@ -118,8 +117,7 @@ describe('AuthContext', () => {
   });
 
   it('clears localStorage on getCurrentUser failure', async () => {
-    const { apiService } = require('../../services/api');
-    apiService.getCurrentUser.mockRejectedValue(new Error('Invalid token'));
+    vi.mocked(apiService.getCurrentUser, { partial: true }).mockRejectedValue(new Error('Invalid token'));
 
     localStorage.setItem('access_token', 'invalid_token');
     localStorage.setItem('refresh_token', 'invalid_refresh');

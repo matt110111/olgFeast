@@ -50,7 +50,7 @@ const LoginForm: React.FC = () => {
             <ChefHat className="h-12 w-12 text-primary-600 dark:text-primary-400" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Sign in to your account
+            Sign in to OLG Feast
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Or{' '}
@@ -81,6 +81,7 @@ const LoginForm: React.FC = () => {
                   id="username"
                   name="username"
                   type="text"
+                  autoComplete="username"
                   required
                   value={formData.username}
                   onChange={handleChange}
@@ -101,6 +102,7 @@ const LoginForm: React.FC = () => {
                   id="password"
                   name="password"
                   type="password"
+                  autoComplete="current-password"
                   required
                   value={formData.password}
                   onChange={handleChange}
@@ -121,24 +123,7 @@ const LoginForm: React.FC = () => {
             </button>
           </div>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-700" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">Demo Credentials</span>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-1 gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-md">
-                <strong>Staff:</strong> admin / admin123
-              </div>
-              <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-md">
-                <strong>Customer:</strong> customer / customer123
-              </div>
-            </div>
-          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Use the account provided by your event organizer.</p>
         </form>
       </div>
     </div>

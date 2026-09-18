@@ -1,32 +1,34 @@
+vi.mock('../../../contexts/CartContext', () => ({ useCart: () => ({addToCart:vi.fn(),recentlyAdded:null,isLoading:false}) }));
+import { apiService } from '../../../services/api';
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import MenuList from '../../Menu/MenuList';
 
 // Mock the API service
-jest.mock('../../../services/api', () => ({
+vi.mock('../../../services/api', () => ({
   apiService: {
-    getFoodGroups: jest.fn(),
+    getFoodGroups: vi.fn(),
   },
 }));
 
 // Mock react-router-dom
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
+vi.mock('react-router-dom', async () => ({
+  ...await vi.importActual('react-router-dom'),
+  useNavigate: () => vi.fn(),
 }));
 
 describe('MenuList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders loading state initially', () => {
-    const { apiService } = require('../../../services/api');
-    apiService.getFoodGroups.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+    vi.mocked(apiService.getFoodGroups, { partial: true }).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
 
     render(<MenuList />);
     
-    expect(screen.getByText('Loading...')).toBeInTheDocument(); // Loading text
+    expect(screen.getByText('Loading menu...')).toBeInTheDocument(); // Loading text
   });
 
   it('renders menu items correctly', async () => {
@@ -36,6 +38,7 @@ describe('MenuList', () => {
         items: [
           {
             id: 1,
+            food_group: "Dinner",
             name: 'Buffalo Wings',
             value: 12.99,
             ticket: 1,
@@ -50,6 +53,7 @@ describe('MenuList', () => {
         items: [
           {
             id: 2,
+            food_group: "Dinner",
             name: 'Grilled Salmon',
             value: 24.99,
             ticket: 2,
@@ -61,8 +65,7 @@ describe('MenuList', () => {
       },
     ];
 
-    const { apiService } = require('../../../services/api');
-    apiService.getFoodGroups.mockResolvedValue({ data: mockFoodGroups });
+    vi.mocked(apiService.getFoodGroups, { partial: true }).mockResolvedValue({ data: mockFoodGroups });
 
     render(<MenuList />);
 
@@ -82,6 +85,7 @@ describe('MenuList', () => {
         items: [
           {
             id: 1,
+            food_group: "Dinner",
             name: 'Buffalo Wings',
             value: 12.99,
             ticket: 1,
@@ -93,22 +97,20 @@ describe('MenuList', () => {
       },
     ];
 
-    const { apiService } = require('../../../services/api');
-    apiService.getFoodGroups.mockResolvedValue({ data: mockFoodGroups });
+    vi.mocked(apiService.getFoodGroups, { partial: true }).mockResolvedValue({ data: mockFoodGroups });
 
     render(<MenuList />);
 
     await waitFor(() => {
-      expect(screen.getByText('$12.99')).toBeInTheDocument();
+      expect(screen.getByText('1 tickets per portion')).toBeInTheDocument();
       expect(screen.getByText('1 ticket')).toBeInTheDocument();
-      expect(screen.getByText('5 min')).toBeInTheDocument(); // ticket * 5
+      expect(screen.queryByText('5 min')).not.toBeInTheDocument();
       expect(screen.getByText('Spicy buffalo wings')).toBeInTheDocument();
     });
   });
 
   it('displays error message on API failure', async () => {
-    const { apiService } = require('../../../services/api');
-    apiService.getFoodGroups.mockRejectedValue(new Error('API Error'));
+    vi.mocked(apiService.getFoodGroups, { partial: true }).mockRejectedValue(new Error('API Error'));
 
     render(<MenuList />);
 
@@ -118,8 +120,7 @@ describe('MenuList', () => {
   });
 
   it('handles empty menu gracefully', async () => {
-    const { apiService } = require('../../../services/api');
-    apiService.getFoodGroups.mockResolvedValue({ data: [] });
+    vi.mocked(apiService.getFoodGroups, { partial: true }).mockResolvedValue({ data: [] });
 
     render(<MenuList />);
 
@@ -136,6 +137,7 @@ describe('MenuList', () => {
         items: [
           {
             id: 1,
+            food_group: "Dinner",
             name: 'Buffalo Wings',
             value: 12.99,
             ticket: 1,
@@ -147,8 +149,7 @@ describe('MenuList', () => {
       },
     ];
 
-    const { apiService } = require('../../../services/api');
-    apiService.getFoodGroups.mockResolvedValue({ data: mockFoodGroups });
+    vi.mocked(apiService.getFoodGroups, { partial: true }).mockResolvedValue({ data: mockFoodGroups });
 
     render(<MenuList />);
 

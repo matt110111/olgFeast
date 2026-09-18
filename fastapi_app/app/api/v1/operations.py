@@ -59,7 +59,7 @@ def get_pending_orders(
     """Get all pending orders (staff only)"""
     orders = db.query(Order).options(
         joinedload(Order.order_items).joinedload(OrderItem.food_item)
-    ).filter(Order.status == OrderStatus.PENDING).order_by(Order.date_ordered).all()
+    ).filter(Order.status == OrderStatus.PENDING, Order.awaiting_tickets.is_(False), Order.voided_at.is_(None)).order_by(Order.date_ordered).all()
     return orders
 
 
@@ -150,7 +150,7 @@ def get_operations_analytics(
     last_30d = now - timedelta(days=30)
     
     # Order counts by status
-    pending_count = db.query(Order).filter(Order.status == OrderStatus.PENDING).count()
+    pending_count = db.query(Order).filter(Order.status == OrderStatus.PENDING, Order.awaiting_tickets.is_(False), Order.voided_at.is_(None)).count()
     preparing_count = db.query(Order).filter(Order.status == OrderStatus.PREPARING).count()
     ready_count = db.query(Order).filter(Order.status == OrderStatus.READY).count()
     

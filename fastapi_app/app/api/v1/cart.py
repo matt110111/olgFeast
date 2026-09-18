@@ -63,8 +63,10 @@ def add_item_to_cart(
             detail="Food item not found"
         )
     
+    if str(food_item.is_available).lower() not in ('true', '1'):
+        raise HTTPException(409, 'This item is unavailable')
     cart = get_or_create_cart(db, current_user.id)
-    
+
     # Check if item already exists in cart
     existing_item = db.query(CartItem).filter(
         CartItem.cart_id == cart.id,
@@ -73,6 +75,8 @@ def add_item_to_cart(
     
     if existing_item:
         # Update quantity
+        if existing_item.quantity + item_data.quantity > 999:
+            raise HTTPException(422, 'Maximum quantity is 999')
         existing_item.quantity += item_data.quantity
         db.commit()
         db.refresh(existing_item)

@@ -11,6 +11,7 @@ export interface User {
   email: string;
   is_active: boolean;
   is_staff: boolean;
+  is_admin?: boolean;
   created_at: string;
   updated_at?: string;
 }
@@ -89,6 +90,9 @@ export interface CartSummary {
 
 // Order Types
 export interface OrderItem {
+  unit_tickets: number;
+  unit_value: number;
+  item_name: string;
   id: number;
   order_id: number;
   food_item_id: number;
@@ -128,6 +132,8 @@ export interface OrderUpdate {
 }
 
 export interface OrderSummary {
+  awaiting_tickets?: boolean;
+  voided_at?: string | null;
   id: number;
   display_id: number;
   ref_code: string;

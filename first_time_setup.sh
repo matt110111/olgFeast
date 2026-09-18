@@ -2,8 +2,6 @@
 
 # OlgFeast First-Time Setup Script
 # This script handles the initial setup for production deployment
-# Clean up exisitng environment
-docker-compose -f docker-compose.yml -f docker-compose.override.yml down --volumes --remove-orphans
 
 set -e
 

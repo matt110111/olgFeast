@@ -10,80 +10,10 @@ from ...models.order import Order, OrderItem, OrderStatus
 from ...models.cart import Cart, CartItem
 from ...models.user import User
 from ...schemas.order import Order as OrderSchema, OrderCreate, OrderUpdate, OrderSummary, OrderAnalytics
-from ...api.deps import get_current_user, get_current_staff_user
+from ...api.deps import get_current_user, get_current_staff_user, get_current_admin_user
 from ...services.order_service import OrderService
 
 router = APIRouter()
-
-
-def broadcast_new_order_background(message: dict):
-    """Background task to broadcast new order messages"""
-    import threading
-    import asyncio
-
-    def _broadcast():
-        try:
-            # Create new event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-            async def broadcast():
-                from ...websocket.connection_manager import manager
-                await manager.broadcast_json_to_channel(message, "kitchen_display")
-                await manager.broadcast_json_to_channel(message, "admin_dashboard")
-                print(f"📢 Broadcasted new order: {message['data']['ref_code']}")
-
-            loop.run_until_complete(broadcast())
-            loop.close()
-        except Exception as e:
-            print(f"⚠️ Failed to broadcast new order: {e}")
-
-    # Run in background thread
-    thread = threading.Thread(target=_broadcast)
-    thread.daemon = True
-    thread.start()
-
-
-def broadcast_status_change_background(message: dict):
-    """Background task to broadcast status change messages"""
-    import threading
-    import asyncio
-
-    def _broadcast():
-        try:
-            # Create new event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-            async def broadcast():
-                from ...websocket.connection_manager import manager
-                from ...websocket.websocket_service import WebSocketService
-                from ...core.database import SessionLocal
-                
-                # Broadcast status change message
-                await manager.broadcast_json_to_channel(message, "kitchen_display")
-                await manager.broadcast_json_to_channel(message, "admin_dashboard")
-                
-                # Also send updated kitchen state and dashboard analytics
-                db = SessionLocal()
-                try:
-                    websocket_service = WebSocketService(db)
-                    await websocket_service.broadcast_kitchen_update()
-                    await websocket_service.broadcast_dashboard_update()
-                finally:
-                    db.close()
-                
-                print(f"📢 Broadcasted status change: {message['data']['ref_code']} {message['data']['old_status']} → {message['data']['new_status']}")
-
-            loop.run_until_complete(broadcast())
-            loop.close()
-        except Exception as e:
-            print(f"⚠️ Failed to broadcast status change: {e}")
-
-    # Run in background thread
-    thread = threading.Thread(target=_broadcast)
-    thread.daemon = True
-    thread.start()
 
 
 @router.post("/checkout", response_model=OrderSchema)
@@ -94,6 +24,9 @@ def create_order(
     db: Session = Depends(get_db)
 ):
     """Create a new order from cart items"""
+    from ...models.event import DinnerEvent
+    if db.query(DinnerEvent).filter_by(closed=False).first():
+        raise HTTPException(409, 'Choose an event in the event station to place this order')
     order_service = OrderService(db)
     order = order_service.create_order(current_user.id, order_data)
     
@@ -103,6 +36,8 @@ def create_order(
             detail="Cart is empty or order creation failed"
         )
     
+    from ...websocket.notifications import notify_order
+    background_tasks.add_task(notify_order, order.id)
     return order
 
 
@@ -120,8 +55,8 @@ def get_my_orders(
     
     result = []
     for order in orders:
-        total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
-        total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
+        total_value = sum(float(item.unit_value) * item.quantity for item in order.order_items)
+        total_tickets = sum(item.unit_tickets * item.quantity for item in order.order_items)
         
         result.append(OrderSummary(
             id=order.id,
@@ -129,6 +64,8 @@ def get_my_orders(
             ref_code=order.ref_code,
             customer_name=order.customer_name,
             status=order.status.value,
+            awaiting_tickets=order.awaiting_tickets,
+            voided_at=order.voided_at,
             total_value=total_value,
             total_tickets=total_tickets,
             item_count=len(order.order_items),
@@ -198,74 +135,54 @@ def update_order_status(
     order_id: int,
     order_update: OrderUpdate,
     background_tasks: BackgroundTasks,
+    room_id: int | None = None,
     current_user: User = Depends(get_current_staff_user),
     db: Session = Depends(get_db)
 ):
     """Update order status (staff only)"""
-    order = db.query(Order).filter(Order.id == order_id).first()
+    order = db.query(Order).filter(Order.id == order_id).with_for_update().first()
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found"
         )
     
+    from ...services.rooms import check_order_room
+    check_order_room(order, room_id)
     if not order_update.status:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Status is required"
         )
     
-    # Validate status transition
-    valid_statuses = [status.value for status in OrderStatus]
-    if order_update.status not in valid_statuses:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid status. Must be one of: {valid_statuses}"
-        )
-    
-    old_status = order.status
+    if order_update.status not in {s.value for s in OrderStatus}:
+        raise HTTPException(400, 'Invalid status')
+    transitions = {'pending': 'preparing', 'preparing': 'ready', 'ready': 'complete'}
+    if order.awaiting_tickets:
+        raise HTTPException(409, 'A volunteer must confirm ticket collection before preparation')
+    if order.voided_at:
+        raise HTTPException(409, 'This order was voided')
+    if order_update.status == order.status.value:
+        return order
+    if transitions.get(order.status.value) != order_update.status:
+        raise HTTPException(409, 'Orders must progress from pending to preparing, ready, then complete')
     order.status = OrderStatus(order_update.status)
-    
-    # Update timing fields based on status
-    current_time = datetime.utcnow()
-    if order.status == OrderStatus.PREPARING and old_status == OrderStatus.PENDING:
-        order.date_preparing = current_time
-    elif order.status == OrderStatus.READY and old_status == OrderStatus.PREPARING:
-        order.date_ready = current_time
-    elif order.status == OrderStatus.COMPLETE and old_status == OrderStatus.READY:
-        order.date_complete = current_time
-    
+    from datetime import timezone
+    now = datetime.now(timezone.utc)
+    order.last_status_change = now
+    field = {'preparing': 'date_preparing', 'ready': 'date_ready', 'complete': 'date_complete'}[order.status.value]
+    setattr(order, field, now)
     db.commit()
     db.refresh(order)
-    
-    # Schedule WebSocket broadcast for status change
-    try:
-        # Create status change message
-        status_change_message = {
-            "type": "order_status_change",
-            "data": {
-                "order_id": order.id,
-                "ref_code": order.ref_code,
-                "old_status": old_status.value,
-                "new_status": order.status.value,
-                "timestamp": datetime.utcnow().isoformat(),
-                "customer_name": order.customer_name
-            },
-            "timestamp": datetime.utcnow().isoformat()
-        }
+    from ...websocket.notifications import notify_order
+    background_tasks.add_task(notify_order, order.id)
 
-        # Schedule background broadcast
-        background_tasks.add_task(broadcast_status_change_background, status_change_message)
-
-    except Exception as e:
-        print(f"⚠️ Failed to schedule status change broadcast: {e}")
-    
     return order
 
 
 @router.get("/analytics/dashboard", response_model=OrderAnalytics)
 def get_order_analytics(
-    current_user: User = Depends(get_current_staff_user),
+    current_user: User = Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Get order analytics for admin dashboard (staff only)"""
@@ -290,19 +207,19 @@ def get_order_analytics(
         status_counts[status.value] = count
     
     # Revenue calculations
-    completed_orders = db.query(Order).filter(Order.status == OrderStatus.COMPLETE)
+    completed_orders = db.query(Order).filter(Order.status == OrderStatus.COMPLETE, Order.voided_at.is_(None))
     
     total_revenue = 0
     revenue_today = 0
     revenue_this_week = 0
     
     for order in completed_orders:
-        order_value = sum(item.food_item.value * item.quantity for item in order.order_items)
+        order_value = sum(float(item.unit_value) * item.quantity for item in order.order_items)
         total_revenue += order_value
         
-        if order.date_ordered >= last_24h:
+        if order.date_ordered.replace(tzinfo=None) >= last_24h:
             revenue_today += order_value
-        if order.date_ordered >= last_7d:
+        if order.date_ordered.replace(tzinfo=None) >= last_7d:
             revenue_this_week += order_value
     
     return OrderAnalytics(

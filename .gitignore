@@ -150,6 +150,8 @@ jspm_packages/
 
 # Docker
 .dockerignore
+!frontend/.dockerignore
+!fastapi_app/.dockerignore
 
 # IDE
 .vscode/
@@ -170,3 +172,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+.venv/
+.preview.env

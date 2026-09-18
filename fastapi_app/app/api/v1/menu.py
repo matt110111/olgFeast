@@ -5,8 +5,11 @@ from typing import List, Optional
 from ...core.database import get_db
 from ...models.menu import FoodItem
 from ...schemas.menu import FoodItem as FoodItemSchema, FoodItemCreate, FoodItemUpdate, FoodItemGroup
-from ...api.deps import get_current_user, get_current_staff_user
+from ...api.deps import get_current_user, get_current_admin_user
 from ...models.user import User
+from ...models.event import OrderCounter, RecipeLine, RoomMenuItem
+from ...models.order import OrderItem
+from ...models.cart import CartItem
 
 router = APIRouter()
 
@@ -24,7 +27,7 @@ def get_food_items(
     if food_group:
         query = query.filter(FoodItem.food_group == food_group)
     
-    items = query.offset(skip).limit(limit).all()
+    items = query.order_by(FoodItem.id).offset(skip).limit(limit).all()
     return items
 
 
@@ -60,10 +63,13 @@ def get_food_item(item_id: int, db: Session = Depends(get_db)):
 def create_food_item(
     item_data: FoodItemCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_staff_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """Create a new food item (staff only)"""
-    db_item = FoodItem(**item_data.model_dump())
+    db.query(OrderCounter).filter_by(id=1).with_for_update().first()
+    values = item_data.model_dump()
+    values['is_available'] = str(values['is_available']).lower()
+    db_item = FoodItem(**values)
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
@@ -75,7 +81,7 @@ def update_food_item(
     item_id: int,
     item_data: FoodItemUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_staff_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """Update a food item (staff only)"""
     db_item = db.query(FoodItem).filter(FoodItem.id == item_id).first()
@@ -85,9 +91,12 @@ def update_food_item(
             detail="Food item not found"
         )
     
+    db.query(OrderCounter).filter_by(id=1).with_for_update().first()
     # Update only provided fields
     update_data = item_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
+        if field == 'is_available':
+            value = str(value).lower()
         setattr(db_item, field, value)
     
     db.commit()
@@ -99,9 +108,10 @@ def update_food_item(
 def delete_food_item(
     item_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_staff_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """Delete a food item (staff only)"""
+    db.query(OrderCounter).filter_by(id=1).with_for_update().first()
     db_item = db.query(FoodItem).filter(FoodItem.id == item_id).first()
     if not db_item:
         raise HTTPException(
@@ -109,7 +119,10 @@ def delete_food_item(
             detail="Food item not found"
         )
     
+    if any(db.query(model).filter_by(food_item_id=item_id).first() for model in (OrderItem, CartItem, RecipeLine)):
+        raise HTTPException(409, 'This item has history or a recipe. Mark it unavailable instead.')
     item_name = db_item.name
+    db.query(RoomMenuItem).filter_by(food_item_id=item_id).delete()
     db.delete(db_item)
     db.commit()
     

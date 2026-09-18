@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
+const EventWorkspace = lazy(() => import('./components/Events/EventWorkspace'));
+const Account = lazy(() => import('./components/Events/Account'));
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
@@ -9,17 +11,17 @@ import RegisterForm from './components/Auth/RegisterForm';
 import MenuList from './components/Menu/MenuList';
 import CartList from './components/Cart/CartList';
 import OrderList from './components/Orders/OrderList';
-import KitchenDisplay from './components/Kitchen/KitchenDisplay';
-import AdminDashboard from './components/Admin/AdminDashboard';
-import OrderHistory from './components/Admin/OrderHistory';
-import OrderDetail from './components/Admin/OrderDetail';
+const KitchenDisplay = lazy(() => import('./components/Kitchen/KitchenDisplay'));
+const AdminDashboard = lazy(() => import('./components/Admin/AdminDashboard'));
+const OrderHistory = lazy(() => import('./components/Admin/OrderHistory'));
+const OrderDetail = lazy(() => import('./components/Admin/OrderDetail'));
 import CheckoutForm from './components/Checkout/CheckoutForm';
 
 // Protected Route Component
-const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAuth?: boolean; requireStaff?: boolean }> = ({ 
-  children, 
-  requireAuth = true, 
-  requireStaff = false 
+const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAuth?: boolean; requireStaff?: boolean }> = ({
+  children,
+  requireAuth = true,
+  requireStaff = false
 }) => {
   const { isAuthenticated, isStaff, loading } = useAuth();
 
@@ -44,6 +46,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAuth?: boolea
 
 // Home Page Component
 const HomePage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  if (isAuthenticated) return <Navigate to="/event" replace />;
   return (
     <Layout>
       <MenuList />
@@ -120,20 +124,22 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <Router>
-          <Routes>
+          <Suspense fallback={<p className="p-8" role="status">Loading…</p>}><Routes>
+          <Route path="/event" element={<ProtectedRoute><Layout><Suspense fallback={<p>Loading event station…</p>}><EventWorkspace /></Suspense></Layout></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute><Layout><Suspense fallback={<p>Loading account…</p>}><Account /></Suspense></Layout></ProtectedRoute>} />
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
-          
+
           {/* Protected Routes */}
-          <Route 
-            path="/cart" 
+          <Route
+            path="/cart"
             element={
               <ProtectedRoute>
                 <CartPage />
               </ProtectedRoute>
-            } 
+            }
           />
                  <Route
                    path="/orders"
@@ -153,42 +159,42 @@ function App() {
                  />
 
                  {/* Staff Only Routes */}
-          <Route 
-            path="/kitchen" 
+          <Route
+            path="/kitchen"
             element={
               <ProtectedRoute requireStaff>
                 <KitchenPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin" 
+          <Route
+            path="/admin"
             element={
               <ProtectedRoute requireStaff>
                 <AdminPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin/orders" 
+          <Route
+            path="/admin/orders"
             element={
               <ProtectedRoute requireStaff>
                 <OrderHistoryPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin/orders/:orderId" 
+          <Route
+            path="/admin/orders/:orderId"
             element={
               <ProtectedRoute requireStaff>
                 <OrderDetailPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          
+
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          </Routes></Suspense>
           </Router>
         </CartProvider>
       </AuthProvider>

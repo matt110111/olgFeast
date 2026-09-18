@@ -52,7 +52,8 @@ class TestOrders:
         assert data["customer_name"] == "Test Customer"
         assert data["status"] == "pending"
         assert "ref_code" in data
-        assert len(data["order_items"]) == 3  # 2 + 1 items
+        assert len(data["order_items"]) == 2  # Two product lines
+        assert sum(item["quantity"] for item in data["order_items"]) == 3
         
         # Verify cart is cleared
         cart_response = client.get("/api/v1/cart/items", headers=auth_headers)
@@ -277,8 +278,8 @@ class TestOrders:
         """Test that order endpoints require authentication"""
         # Create order without auth
         response = client.post("/api/v1/orders/checkout", json={"customer_name": "Test"})
-        assert response.status_code == 403
+        assert response.status_code == 401
         
         # Get orders without auth
         response = client.get("/api/v1/orders/my-orders")
-        assert response.status_code == 403
+        assert response.status_code == 401

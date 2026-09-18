@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { apiService } from '../../services/api';
-import { CreditCard, User, CheckCircle } from 'lucide-react';
+import { Ticket, User, CheckCircle } from 'lucide-react';
 
 const CheckoutForm: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -73,7 +73,7 @@ const CheckoutForm: React.FC = () => {
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
-        <p className="mt-2 text-gray-600">Review your order and complete your purchase</p>
+        <p className="mt-2 text-gray-600">Review the portions and tickets owed. Tickets are sold separately.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -89,7 +89,7 @@ const CheckoutForm: React.FC = () => {
                   <p className="text-sm text-gray-500">{item.food_item.food_group}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">${(item.food_item.value * item.quantity).toFixed(2)}</p>
+                  <p className="font-medium">{item.food_item.ticket * item.quantity} tickets</p>
                   <p className="text-sm text-gray-500">x{item.quantity}</p>
                 </div>
               </div>
@@ -99,15 +99,15 @@ const CheckoutForm: React.FC = () => {
           <div className="border-t border-gray-200 pt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span>Subtotal ({cart.total_items} items)</span>
-              <span>${cart.total_value.toFixed(2)}</span>
+              <span>{cart.total_tickets} tickets</span>
             </div>
             <div className="flex justify-between text-sm text-gray-500">
-              <span>Estimated tickets</span>
+              <span>Tickets owed</span>
               <span>{cart.total_tickets}</span>
             </div>
             <div className="flex justify-between text-lg font-semibold">
               <span>Total</span>
-              <span>${cart.total_value.toFixed(2)}</span>
+              <span>{cart.total_tickets} tickets</span>
             </div>
           </div>
         </div>
@@ -151,7 +151,7 @@ const CheckoutForm: React.FC = () => {
                   <h3 className="text-sm font-medium text-blue-800">Order Information</h3>
                   <div className="mt-2 text-sm text-blue-700">
                     <p>• Your order will be prepared fresh</p>
-                    <p>• Estimated preparation time: {cart.total_tickets * 5} minutes</p>
+                    <p>• Ticket totals are not preparation times</p>
                     <p>• You'll receive real-time updates on order status</p>
                   </div>
                 </div>
@@ -178,7 +178,7 @@ const CheckoutForm: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <CreditCard className="h-4 w-4 mr-2" />
+                    <Ticket className="h-4 w-4 mr-2" />
                     Place Order
                   </>
                 )}

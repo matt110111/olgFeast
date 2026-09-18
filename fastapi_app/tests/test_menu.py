@@ -116,7 +116,7 @@ class TestMenu:
         
         response = client.post("/api/v1/menu/items", json=item_data)
         
-        assert response.status_code == 403
+        assert response.status_code == 401
     
     def test_update_food_item(self, client: TestClient, test_food_items, staff_auth_headers):
         """Test updating a food item (staff only)"""

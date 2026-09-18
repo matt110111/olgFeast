@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo, useCallback } from 'react';
 import { FoodItem, FoodItemGroup } from '../../types';
 import { apiService } from '../../services/api';
 import { useCart } from '../../contexts/CartContext';
-import { ShoppingCart, DollarSign, Clock, Check } from 'lucide-react';
+import { ShoppingCart, Ticket, Check } from 'lucide-react';
 
 const MenuList: React.FC = memo(() => {
   const { addToCart, recentlyAdded, isLoading: cartLoading } = useCart();
@@ -66,7 +66,7 @@ const MenuList: React.FC = memo(() => {
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900">Our Menu</h1>
         <p className="mt-2 text-gray-600">
-          Discover our delicious selection of fresh, high-quality dishes
+          Choose your portions. Tickets are sold separately.
         </p>
       </div>
 
@@ -84,7 +84,7 @@ const MenuList: React.FC = memo(() => {
               return (
                 <div
                   key={item.id}
-                  onClick={() => handleAddToCart(item)}
+                  onClick={() => { if (item.is_available && !cartLoading && !isAdding) void handleAddToCart(item); }}
                   className={`
                     bg-white rounded-lg shadow-md overflow-hidden 
                     cursor-pointer transform transition-all duration-200 ease-in-out
@@ -120,21 +120,12 @@ const MenuList: React.FC = memo(() => {
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <DollarSign className="h-4 w-4 mr-1" />
-                          <span className="font-semibold text-gray-900">
-                            ${item.value.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          <span>{item.ticket * 5} min</span>
-                        </div>
+                        <div className="flex items-center"><Ticket className="h-4 w-4 mr-1" /><span>{item.ticket} tickets per portion</span></div>
                       </div>
                       
                       <button
                         onClick={(e) => handleAddToCart(item, e)}
-                        disabled={isAdding || cartLoading}
+                        disabled={!item.is_available || isAdding || cartLoading}
                         className={`
                           flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium 
                           transition-all duration-200 ease-in-out

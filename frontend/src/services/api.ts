@@ -23,7 +23,8 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: `http://${window.location.hostname}:8000/api/v1`,
+      baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+      timeout: 15000,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -43,38 +44,49 @@ class ApiService {
       }
     );
 
-    // Add response interceptor to handle token refresh
-    this.api.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-
-          try {
-            const refreshToken = localStorage.getItem('refresh_token');
-            if (refreshToken) {
-              const response = await this.refreshToken(refreshToken);
-              const { access_token } = response.data;
-              
-              localStorage.setItem('access_token', access_token);
-              
-              // Retry the original request
-              originalRequest.headers.Authorization = `Bearer ${access_token}`;
-              return this.api(originalRequest);
-            }
-          } catch (refreshError) {
-            // Refresh failed, redirect to login
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            window.location.href = '/login';
-          }
+    // Share one refresh request; never recursively refresh a failed login/refresh.
+    this.api.interceptors.response.use(response => response, async error => {
+      const request = error.config;
+      if (request && error.response?.status === 401 && !request._retry &&
+          !request.url?.startsWith('/auth/login') && !request.url?.startsWith('/auth/refresh')) {
+        request._retry = true;
+        try {
+          await this.ensureSession(true);
+          return this.api(request);
+        } catch {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          window.dispatchEvent(new Event('session-expired'));
         }
-
-        return Promise.reject(error);
       }
-    );
+      return Promise.reject(error);
+    });
+  }
+
+  private refreshing: Promise<void> | null = null;
+
+  async ensureSession(force = false): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    try {
+      if (!force && token && JSON.parse(atob(token.split('.')[1])).exp > Date.now() / 1000 + 60) return;
+    } catch { /* refresh malformed or expired tokens */ }
+    if (!this.refreshing) {
+      const refresh = localStorage.getItem('refresh_token');
+      if (!refresh) throw new Error('Sign in required');
+      this.refreshing = this.refreshToken(refresh).then(({ data }) => {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('refresh_token', data.refresh_token);
+      }).finally(() => { this.refreshing = null; });
+    }
+    return this.refreshing;
+  }
+
+  async request<T>(method: string, url: string, data?: unknown): Promise<T> {
+    return (await this.api.request<T>({ method, url, data, timeout: 15000 })).data;
+  }
+
+  async download(url: string): Promise<Blob> {
+    return (await this.api.get(url, { responseType: 'blob' })).data;
   }
 
   // Authentication endpoints

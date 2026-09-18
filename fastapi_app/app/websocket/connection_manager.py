@@ -24,7 +24,8 @@ class ConnectionManager:
     
     async def connect(self, websocket: WebSocket, channel: str, user_info: dict = None):
         """Accept a new WebSocket connection"""
-        await websocket.accept()
+        if websocket.application_state != WebSocketState.CONNECTED:
+            await websocket.accept()
         
         # Add to appropriate channel
         if channel in self.active_connections:
@@ -35,6 +36,7 @@ class ConnectionManager:
             "channel": channel,
             "connected_at": datetime.utcnow(),
             "user_info": user_info or {},
+            "user_id": (user_info or {}).get("user_id"),
         }
         
         print(f"✅ WebSocket connected to channel: {channel}")

@@ -6,7 +6,7 @@ import os
 class Settings(BaseSettings):
     # Application
     APP_NAME: str = "olgFeast API"
-    APP_VERSION: str = "2.0.0"
+    APP_VERSION: str = "2.1.0"
     DEBUG: bool = True
     SECRET_KEY: str = "your-secret-key-change-in-production"
     

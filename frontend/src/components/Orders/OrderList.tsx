@@ -129,7 +129,7 @@ const OrderList: React.FC = () => {
               </div>
               <div className="text-right">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  {order.voided_at ? 'Cancelled' : order.awaiting_tickets ? 'Bring tickets to the volunteer desk' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>
                 <p className="text-lg font-medium text-gray-900 mt-1">
                   ${order.total_value.toFixed(2)}

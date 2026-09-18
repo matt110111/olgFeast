@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 from .menu import FoodItem
@@ -6,7 +6,7 @@ from .menu import FoodItem
 
 class CartItemBase(BaseModel):
     food_item_id: int
-    quantity: int = 1
+    quantity: int = Field(default=1, ge=1, le=999)
 
 
 class CartItemCreate(CartItemBase):
@@ -14,7 +14,7 @@ class CartItemCreate(CartItemBase):
 
 
 class CartItemUpdate(BaseModel):
-    quantity: int
+    quantity: int = Field(ge=1, le=999)
 
 
 class CartItem(CartItemBase):

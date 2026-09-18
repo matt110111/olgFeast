@@ -10,8 +10,6 @@ services:
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U olgfeast -d olgfeast"]
       interval: 10s
@@ -26,12 +24,12 @@ services:
     image: redis:7-alpine
     container_name: olgfeast_redis
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    ports:
-      - "6379:6379"
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD-SHELL", "redis-cli ping | grep -qx PONG"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,9 +37,9 @@ services:
     networks:
       - olgfeast_network
 
-  # FastAPI Backend (using pre-built image from GitHub Container Registry)
+  # FastAPI Backend
   backend:
-    image: ghcr.io/${GITHUB_OWNER:-matt110111}/olgfeast-backend:latest
+    image: ghcr.io/${GITHUB_OWNER:-matt110111}/olgfeast-backend:${IMAGE_TAG:?Set IMAGE_TAG to a verified sha tag}
     container_name: olgfeast_backend
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
@@ -49,8 +47,9 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       DEBUG: ${DEBUG}
       ENVIRONMENT: ${ENVIRONMENT}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -73,9 +72,9 @@ services:
     volumes:
       - ./setup_database.py:/app/setup_database.py:ro
 
-  # React Frontend (using pre-built image from GitHub Container Registry)
+  # React Frontend
   frontend:
-    image: ghcr.io/${GITHUB_OWNER:-matt110111}/olgfeast-frontend:latest
+    image: ghcr.io/${GITHUB_OWNER:-matt110111}/olgfeast-frontend:${IMAGE_TAG:?Set IMAGE_TAG to a verified sha tag}
     container_name: olgfeast_frontend
     ports:
       - "3000:80"
@@ -95,24 +94,6 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Watchtower for automatic deployments (optional)
-  # Uncomment the section below to enable automatic pulling of new images
-  # watchtower:
-  #   image: containrrr/watchtower
-  #   container_name: olgfeast_watchtower
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - /etc/localtime:/etc/localtime:ro
-  #   environment:
-  #     - WATCHTOWER_POLL_INTERVAL=300  # Check every 5 minutes
-  #     - WATCHTOWER_CLEANUP=true       # Remove old images
-  #     - WATCHTOWER_INCLUDE_RESTARTING=true
-  #     - WATCHTOWER_REVIVE_STOPPED=false
-  #     - WATCHTOWER_LABEL_ENABLE=true  # Only watch containers with watchtower label
-  #   restart: unless-stopped
-  #   networks:
-  #     - olgfeast_network
-
 volumes:
   postgres_data:
     driver: local
@@ -123,6 +104,3 @@ networks:
   olgfeast_network:
     driver: bridge
     name: olgfeast_network
-
-
-

@@ -1,3 +1,10 @@
+# Event tablet deployment
+
+For church and nonprofit dinner events, start with [the event guide](docs/EVENT-GUIDE.md).
+This version records tickets sold elsewhere, portion counts, and recipe-based
+estimated ingredient/supply depletion. Organizers use Event station → Setup;
+volunteers use Take orders and Kitchen.
+
 # OlgFeast - Restaurant Management System
 
 A modern, full-stack restaurant management system built with FastAPI and React. Features include menu management, order processing, kitchen display, and real-time updates via WebSocket.

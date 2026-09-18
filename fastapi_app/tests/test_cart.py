@@ -273,8 +273,8 @@ class TestCart:
         """Test that cart endpoints require authentication"""
         # Get cart items without auth
         response = client.get("/api/v1/cart/items")
-        assert response.status_code == 403
+        assert response.status_code == 401
         
         # Add to cart without auth
         response = client.post("/api/v1/cart/items", json={"food_item_id": 1, "quantity": 1})
-        assert response.status_code == 403
+        assert response.status_code == 401

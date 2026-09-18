@@ -1,9 +1,15 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import json
-from datetime import datetime
+from datetime import datetime, timezone
+import asyncio
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+from .core.database import get_db
+from .api.deps import user_for_token
+from .core.security import verify_token
 
 from .core.config import settings
 from .api.v1.auth import router as auth_router
@@ -21,10 +27,11 @@ from .websocket.websocket_endpoints import (
 )
 
 # Import models to register them with SQLAlchemy
-from .models import user, menu, cart, order
+from .models import user, menu, cart, order, event
+from .api.v1.events import router as events_router
 
 # Create database tables
-Base.metadata.create_all(bind=engine)
+
 
 # Create FastAPI application
 app = FastAPI(
@@ -75,125 +82,72 @@ app.include_router(
     tags=["operations"]
 )
 
-# WebSocket endpoints
-@app.websocket("/ws/kitchen/display")
-async def kitchen_display_ws(websocket: WebSocket):
-    """WebSocket endpoint for kitchen display updates"""
+app.include_router(events_router, prefix="/api/v1/events", tags=["events"])
+
+
+async def event_socket(websocket: WebSocket, channel: str, db: Session):
+    origin = websocket.headers.get("origin")
+    if origin and settings.ALLOWED_HOSTS != ["*"] and origin not in settings.ALLOWED_HOSTS:
+        await websocket.close(code=1008)
+        return
+    await websocket.accept()
     try:
-        await manager.connect(websocket, "kitchen_display")
-        
+        auth = await asyncio.wait_for(websocket.receive_json(), timeout=10)
+        token = auth.get("token", "")
+        user = user_for_token(token, db)
+        if not user or (channel != "order_updates" and not user.is_staff) or (channel == "admin_dashboard" and not user.is_admin):
+            await websocket.close(code=1008)
+            return
+        user_id = user.id
+        payload = verify_token(token)
+        db.rollback()
+        await manager.connect(websocket, channel, {"user_id": user_id})
+        await manager.send_json_message({"type": "authenticated"}, websocket)
         while True:
-            # Wait for messages from client (ping, specific requests)
-            data = await websocket.receive_text()
-            
-            try:
-                message = json.loads(data)
-                message_type = message.get("type")
-                
-                if message_type == "ping":
-                    # Respond to ping
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-                
-                elif message_type == "request_update":
-                    # Send current kitchen state
-                    await send_kitchen_state_update(websocket)
-                
-            except json.JSONDecodeError:
-                # Handle non-JSON messages
-                if data.lower() == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-    
-    except WebSocketDisconnect:
+            remaining = payload["exp"] - datetime.now(timezone.utc).timestamp()
+            if remaining <= 0:
+                await websocket.close(code=4001)
+                return
+            message = await asyncio.wait_for(websocket.receive_json(), timeout=min(remaining, 65))
+            db.expire_all()
+            active_user = user_for_token(token, db)
+            if not active_user or (channel != "order_updates" and not active_user.is_staff) or (channel == "admin_dashboard" and not active_user.is_admin):
+                await websocket.close(code=4001)
+                return
+            db.rollback()
+            kind = message.get("type")
+            if kind == "ping":
+                await manager.send_json_message({"type": "pong"}, websocket)
+            elif channel == "kitchen_display" and kind == "request_update":
+                await send_kitchen_state_update(websocket)
+            elif channel == "admin_dashboard" and kind == "request_analytics":
+                await send_dashboard_analytics(websocket)
+            elif channel == "admin_dashboard" and kind == "request_orders":
+                await send_all_orders_update(websocket)
+            elif channel == "order_updates" and kind == "subscribe_orders":
+                # A client can only subscribe to its own orders.
+                await send_user_orders_update(websocket, user_id)
+    except (WebSocketDisconnect, asyncio.TimeoutError):
+        pass
+    except (ValueError, TypeError, AttributeError):
+        await websocket.close(code=1008)
+    finally:
         await manager.disconnect(websocket)
-    except Exception as e:
-        print(f"❌ WebSocket error in kitchen display: {e}")
-        await manager.disconnect(websocket)
+
+
+@app.websocket("/ws/kitchen/display")
+async def kitchen_display_ws(websocket: WebSocket, db: Session = Depends(get_db)):
+    await event_socket(websocket, "kitchen_display", db)
 
 
 @app.websocket("/ws/orders/updates")
-async def order_updates_ws(websocket: WebSocket):
-    """WebSocket endpoint for order status updates"""
-    await manager.connect(websocket, "order_updates")
-    
-    try:
-        while True:
-            # Wait for messages from client
-            data = await websocket.receive_text()
-            
-            try:
-                message = json.loads(data)
-                message_type = message.get("type")
-                
-                if message_type == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-                
-                elif message_type == "subscribe_orders":
-                    # Subscribe to specific user's order updates
-                    target_user_id = message.get("user_id")
-                    if target_user_id:
-                        # Update connection info
-                        manager.connection_info[websocket]["user_id"] = target_user_id
-                        
-                        # Send current orders
-                        await send_user_orders_update(websocket, target_user_id)
-                
-            except json.JSONDecodeError:
-                if data.lower() == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-    
-    except WebSocketDisconnect:
-        await manager.disconnect(websocket)
+async def order_updates_ws(websocket: WebSocket, db: Session = Depends(get_db)):
+    await event_socket(websocket, "order_updates", db)
 
 
 @app.websocket("/ws/admin/dashboard")
-async def admin_dashboard_ws(websocket: WebSocket):
-    """WebSocket endpoint for admin dashboard updates"""
-    try:
-        await manager.connect(websocket, "admin_dashboard")
-        
-        while True:
-            data = await websocket.receive_text()
-            
-            try:
-                message = json.loads(data)
-                message_type = message.get("type")
-                
-                if message_type == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-                
-                elif message_type == "request_analytics":
-                    await send_dashboard_analytics(websocket)
-                
-                elif message_type == "request_orders":
-                    await send_all_orders_update(websocket)
-                
-            except json.JSONDecodeError:
-                if data.lower() == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-    
-    except WebSocketDisconnect:
-        await manager.disconnect(websocket)
-    except Exception as e:
-        print(f"❌ WebSocket error in admin dashboard: {e}")
-        await manager.disconnect(websocket)
+async def admin_dashboard_ws(websocket: WebSocket, db: Session = Depends(get_db)):
+    await event_socket(websocket, "admin_dashboard", db)
 
 @app.get("/")
 async def root():
@@ -206,8 +160,15 @@ async def root():
     }
 
 @app.get("/health")
-async def health_check():
+def health_check(db: Session = Depends(get_db)):
     """Health check endpoint"""
+    try:
+        db.execute(text("SELECT 1"))
+        revision = db.execute(text("SELECT version_num FROM alembic_version")).scalar()
+        if revision != "0005":
+            raise RuntimeError("Migration required")
+    except Exception:
+        raise HTTPException(503, "Database not ready")
     return {"status": "healthy", "version": settings.APP_VERSION}
 
 if __name__ == "__main__":

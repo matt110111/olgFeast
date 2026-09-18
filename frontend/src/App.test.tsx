@@ -1,14 +1,9 @@
-import React from 'react';
+import { vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import App from './App';
-
-test('renders app without crashing', () => {
-  render(
-    <MemoryRouter>
-      <App />
-    </MemoryRouter>
-  );
-  // Just check that the app renders without throwing
-  expect(document.body).toBeInTheDocument();
+vi.mock('./services/api', () => ({ apiService: { getFoodGroups: vi.fn().mockResolvedValue({data:[]}) } }));
+it('renders the public menu route', async () => {
+  window.history.replaceState({}, '', '/');
+  render(<App />);
+  expect(await screen.findByText('Our Menu')).toBeInTheDocument();
 });

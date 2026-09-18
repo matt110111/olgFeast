@@ -73,8 +73,8 @@ class WebSocketService:
         """Broadcast new order to relevant channels"""
         
         # Calculate order totals
-        total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
-        total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
+        total_value = sum(float(item.unit_value) * item.quantity for item in order.order_items)
+        total_tickets = sum(item.unit_tickets * item.quantity for item in order.order_items)
         
         # Create new order message
         new_order = NewOrderMessage(
@@ -113,9 +113,9 @@ class WebSocketService:
         """Broadcast updated kitchen state to kitchen display"""
         
         # Get current kitchen state
-        pending_orders = self.db.query(Order).filter(Order.status == OrderStatus.PENDING).order_by(Order.date_ordered).all()
-        preparing_orders = self.db.query(Order).filter(Order.status == OrderStatus.PREPARING).order_by(Order.date_ordered).all()
-        ready_orders = self.db.query(Order).filter(Order.status == OrderStatus.READY).order_by(Order.date_ordered).all()
+        pending_orders = self.db.query(Order).filter(Order.status == OrderStatus.PENDING, Order.voided_at.is_(None), Order.awaiting_tickets.is_(False)).order_by(Order.date_ordered).all()
+        preparing_orders = self.db.query(Order).filter(Order.status == OrderStatus.PREPARING, Order.voided_at.is_(None), Order.awaiting_tickets.is_(False)).order_by(Order.date_ordered).all()
+        ready_orders = self.db.query(Order).filter(Order.status == OrderStatus.READY, Order.voided_at.is_(None), Order.awaiting_tickets.is_(False)).order_by(Order.date_ordered).all()
         
         # Format orders for kitchen display
         pending_data = [self._format_order_for_kitchen(order) for order in pending_orders]
@@ -176,13 +176,13 @@ class WebSocketService:
     def _format_order_for_kitchen(self, order: Order) -> dict:
         """Format order data for kitchen display"""
         
-        total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
-        total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
+        total_value = sum(float(item.unit_value) * item.quantity for item in order.order_items)
+        total_tickets = sum(item.unit_tickets * item.quantity for item in order.order_items)
         
         # Group items by food item for display
         items_summary = {}
         for item in order.order_items:
-            food_name = item.food_item.name
+            food_name = item.item_name
             if food_name in items_summary:
                 items_summary[food_name] += item.quantity
             else:
@@ -248,16 +248,16 @@ class WebSocketService:
             status_counts[status.value] = count
         
         # Revenue calculations
-        completed_orders = self.db.query(Order).filter(Order.status == OrderStatus.COMPLETE)
+        completed_orders = self.db.query(Order).filter(Order.status == OrderStatus.COMPLETE, Order.voided_at.is_(None), Order.awaiting_tickets.is_(False))
         
         total_revenue = 0
         revenue_today = 0
         
         for order in completed_orders:
-            order_value = sum(item.food_item.value * item.quantity for item in order.order_items)
+            order_value = sum(float(item.unit_value) * item.quantity for item in order.order_items)
             total_revenue += order_value
             
-            if order.date_ordered >= last_24h:
+            if order.date_ordered.replace(tzinfo=None) >= last_24h:
                 revenue_today += order_value
         
         return {

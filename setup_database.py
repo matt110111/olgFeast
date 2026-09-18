@@ -67,6 +67,7 @@ def setup_database():
             email="admin@olgfeast.com",
             hashed_password=get_password_hash(admin_password),
             is_staff=True,
+            is_admin=True,
             is_active=True
         )
         session.add(admin_user)

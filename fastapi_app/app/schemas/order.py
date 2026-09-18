@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 from .menu import FoodItem
@@ -14,17 +14,21 @@ class OrderItem(OrderItemBase):
     order_id: int
     created_at: datetime
     food_item: FoodItem
+    unit_tickets: int
+    unit_value: float
+    item_name: str
+    recipe_recorded: bool = False
 
     class Config:
         from_attributes = True
 
 
 class OrderBase(BaseModel):
-    customer_name: str
+    customer_name: str = Field(min_length=1, max_length=100)
 
 
 class OrderCreate(OrderBase):
-    pass
+    checkout_key: Optional[str] = Field(default=None, min_length=8, max_length=80)
 
 
 class OrderUpdate(BaseModel):
@@ -43,6 +47,16 @@ class Order(OrderBase):
     date_ready: Optional[datetime] = None
     date_complete: Optional[datetime] = None
     last_status_change: datetime
+    event_id: Optional[int] = None
+    room_id: Optional[int] = None
+    check_id: Optional[int] = None
+    station_number: Optional[int] = None
+    awaiting_tickets: bool = False
+    tickets_confirmed_by: Optional[int] = None
+    tickets_confirmed_at: Optional[datetime] = None
+    tickets_collected: int = 0
+    voided_at: Optional[datetime] = None
+    void_reason: Optional[str] = None
     order_items: List[OrderItem] = []
 
     class Config:
@@ -50,6 +64,8 @@ class Order(OrderBase):
 
 
 class OrderSummary(BaseModel):
+    awaiting_tickets: bool = False
+    voided_at: Optional[datetime] = None
     id: int
     display_id: int
     ref_code: str

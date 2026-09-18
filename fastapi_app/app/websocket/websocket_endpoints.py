@@ -19,139 +19,6 @@ from ..services.order_service import OrderService
 from ..core.database import get_db
 
 
-async def kitchen_display_websocket(
-    websocket: WebSocket,
-    token: Optional[str] = Query(None)
-):
-    """
-    WebSocket endpoint for kitchen display updates
-    Real-time updates for pending, preparing, and ready orders
-    """
-    # For now, allow connections without authentication for testing
-    # In production, you would validate the token here
-    await manager.connect(websocket, "kitchen_display")
-    
-    try:
-        while True:
-            # Wait for messages from client (ping, specific requests)
-            data = await websocket.receive_text()
-            
-            try:
-                message = json.loads(data)
-                message_type = message.get("type")
-                
-                if message_type == "ping":
-                    # Respond to ping
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-                
-                elif message_type == "request_update":
-                    # Send current kitchen state
-                    await send_kitchen_state_update(websocket)
-                
-            except json.JSONDecodeError:
-                # Handle non-JSON messages
-                if data.lower() == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-    
-    except WebSocketDisconnect:
-        await manager.disconnect(websocket)
-
-
-async def order_updates_websocket(
-    websocket: WebSocket,
-    user_id: Optional[int] = Query(None)
-):
-    """
-    WebSocket endpoint for order status updates
-    Real-time updates for specific user's orders
-    """
-    await manager.connect(websocket, "order_updates", {"user_id": user_id})
-    
-    try:
-        while True:
-            # Wait for messages from client
-            data = await websocket.receive_text()
-            
-            try:
-                message = json.loads(data)
-                message_type = message.get("type")
-                
-                if message_type == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-                
-                elif message_type == "subscribe_orders":
-                    # Subscribe to specific user's order updates
-                    target_user_id = message.get("user_id")
-                    if target_user_id:
-                        # Update connection info
-                        manager.connection_info[websocket]["user_id"] = target_user_id
-                        
-                        # Send current orders
-                        await send_user_orders_update(websocket, target_user_id)
-                
-            except json.JSONDecodeError:
-                if data.lower() == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-    
-    except WebSocketDisconnect:
-        await manager.disconnect(websocket)
-
-
-async def admin_dashboard_websocket(
-    websocket: WebSocket,
-    token: Optional[str] = Query(None)
-):
-    """
-    WebSocket endpoint for admin dashboard updates
-    Real-time analytics and management updates
-    """
-    # For now, allow connections without authentication for testing
-    # In production, you would validate the token here
-    await manager.connect(websocket, "admin_dashboard", {"is_admin": True})
-    
-    try:
-        while True:
-            data = await websocket.receive_text()
-            
-            try:
-                message = json.loads(data)
-                message_type = message.get("type")
-                
-                if message_type == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-                
-                elif message_type == "request_analytics":
-                    await send_dashboard_analytics(websocket)
-                
-                elif message_type == "request_orders":
-                    await send_all_orders_update(websocket)
-                
-            except json.JSONDecodeError:
-                if data.lower() == "ping":
-                    await manager.send_json_message({
-                        "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
-                    }, websocket)
-    
-    except WebSocketDisconnect:
-        await manager.disconnect(websocket)
-
-
 async def send_kitchen_state_update(websocket: WebSocket):
     """Send current kitchen state to a specific WebSocket"""
     from ..core.database import SessionLocal
@@ -193,11 +60,11 @@ async def send_user_orders_update(websocket: WebSocket, user_id: int):
     
     orders_data = []
     for order in orders:
-        total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
-        total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
+        total_value = sum(float(item.unit_value) * item.quantity for item in order.order_items)
+        total_tickets = sum(item.unit_tickets * item.quantity for item in order.order_items)
         
         order_data = OrderUpdateMessage(
-            order_id=order.id,
+            id=order.id,
             ref_code=order.ref_code,
             customer_name=order.customer_name,
             status=order.status.value,
@@ -245,16 +112,16 @@ async def send_all_orders_update(websocket: WebSocket):
     
     orders_data = []
     for order in orders:
-        total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
-        total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
+        total_value = sum(float(item.unit_value) * item.quantity for item in order.order_items)
+        total_tickets = sum(item.unit_tickets * item.quantity for item in order.order_items)
         
         # Prepare order items data
         order_items_data = []
         for item in order.order_items:
             order_items_data.append({
                 "food_item": {
-                    "name": item.food_item.name,
-                    "value": item.food_item.value
+                    "name": item.item_name,
+                    "value": float(item.unit_value)
                 },
                 "quantity": item.quantity
             })
@@ -286,13 +153,13 @@ async def send_all_orders_update(websocket: WebSocket):
 
 def format_order_for_kitchen(order: Order) -> dict:
     """Format order data for kitchen display"""
-    total_value = sum(item.food_item.value * item.quantity for item in order.order_items)
-    total_tickets = sum(item.food_item.ticket * item.quantity for item in order.order_items)
+    total_value = sum(float(item.unit_value) * item.quantity for item in order.order_items)
+    total_tickets = sum(item.unit_tickets * item.quantity for item in order.order_items)
     
     # Group items by food item for display
     items_summary = {}
     for item in order.order_items:
-        food_name = item.food_item.name
+        food_name = item.item_name
         if food_name in items_summary:
             items_summary[food_name] += item.quantity
         else:

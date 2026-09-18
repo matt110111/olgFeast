@@ -2,6 +2,8 @@
 Pytest configuration and fixtures for FastAPI tests
 """
 import pytest
+import os
+import tempfile
 import asyncio
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -15,13 +17,13 @@ from app.models.user import User
 from app.models.menu import FoodItem
 
 # Test database URL (in-memory SQLite)
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///" + tempfile.mktemp(prefix="olgfeast-tests-", suffix=".db")
 
 # Create test engine
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
+
 )
 
 # Create test session
@@ -44,6 +46,9 @@ def db_session():
     
     # Create session
     session = TestingSessionLocal()
+    from app.models.event import OrderCounter
+    session.add(OrderCounter(id=1, value=0))
+    session.commit()
     
     yield session
     
@@ -53,15 +58,15 @@ def db_session():
 
 
 @pytest.fixture(scope="function")
-def client(db_session):
+def client(db_session, monkeypatch):
     """Create a test client with database dependency override."""
     def override_get_db():
-        try:
-            yield db_session
-        finally:
-            pass
+        with TestingSessionLocal() as session:
+            yield session
     
     app.dependency_overrides[get_db] = override_get_db
+    monkeypatch.setattr("app.core.database.SessionLocal", TestingSessionLocal)
+    monkeypatch.setattr("app.websocket.notifications.SessionLocal", TestingSessionLocal)
     
     with TestClient(app) as test_client:
         yield test_client
@@ -93,7 +98,8 @@ def test_staff_user(db_session):
         email="staff@example.com",
         hashed_password=get_password_hash("staffpass123"),
         is_active=True,
-        is_staff=True
+        is_staff=True,
+        is_admin=True
     )
     db_session.add(user)
     db_session.commit()

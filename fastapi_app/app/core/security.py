@@ -1,68 +1,58 @@
-from datetime import datetime, timedelta
-from typing import Optional, Union
-from jose import JWTError, jwt
+from datetime import datetime, timedelta, timezone
 import hashlib
 import secrets
-from fastapi import HTTPException, status
+from typing import Optional
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerificationError
+from jose import JWTError, jwt
 from .config import settings
 
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain password against its hash"""
-    salt, hash_part = hashed_password.split(':')
-    return hash_password(plain_password, salt) == hashed_password
+password_hasher = PasswordHasher(time_cost=2, memory_cost=19456, parallelism=1)
 
 
-def get_password_hash(password: str) -> str:
-    """Hash a password with a random salt"""
-    salt = secrets.token_hex(16)
-    return hash_password(password, salt)
+def verify_password(password: str, hashed: str) -> bool:
+    if hashed.startswith('$argon2'):
+        try:
+            return password_hasher.verify(hashed, password)
+        except (InvalidHashError, VerificationError):
+            return False
+    # Upgrade existing installations on their next successful login.
+    try:
+        salt, _ = hashed.split(':', 1)
+        return secrets.compare_digest(hash_password(password, salt), hashed)
+    except (ValueError, TypeError):
+        return False
 
 
 def hash_password(password: str, salt: str) -> str:
-    """Hash a password with a given salt"""
-    return f"{salt}:{hashlib.sha256((password + salt).encode()).hexdigest()}"
+    return f'{salt}:{hashlib.sha256((password + salt).encode()).hexdigest()}'
+
+
+def get_password_hash(password: str) -> str:
+    return password_hasher.hash(password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Create a JWT access token"""
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    return encoded_jwt
+    return jwt.encode({**data, 'type': 'access', 'exp': datetime.now(timezone.utc) +
+        (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))},
+        settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def create_refresh_token(data: dict) -> str:
-    """Create a JWT refresh token"""
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-    to_encode.update({"exp": expire, "type": "refresh"})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    return encoded_jwt
+    return jwt.encode({**data, 'type': 'refresh', 'exp': datetime.now(timezone.utc) +
+        timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)}, settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM)
 
 
-def verify_token(token: str) -> Optional[dict]:
-    """Verify and decode a JWT token"""
+def verify_token(token: str, token_type: str = 'access') -> Optional[dict]:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        return payload
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM],
+            options={'require_exp': True, 'require_sub': True})
+        return payload if payload.get('type') == token_type else None
     except JWTError:
         return None
 
 
 def get_user_from_token(token: str) -> Optional[dict]:
-    """Extract user information from token"""
     payload = verify_token(token)
-    if payload is None:
-        return None
-    
-    username: str = payload.get("sub")
-    if username is None:
-        return None
-    
-    return {"username": username, "user_id": payload.get("user_id")}
+    return {'username': payload['sub'], 'user_id': payload.get('user_id')} if payload else None

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, LoginRequest, RegisterRequest } from '../types';
 import { apiService } from '../services/api';
+import { websocketService } from '../services/websocket';
 
 interface AuthContextType {
   user: User | null;
@@ -71,14 +72,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (userData: RegisterRequest) => {
     try {
       const response = await apiService.register(userData);
-      setUser(response.data);
+      await login({ username: userData.username, password: userData.password });
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;
     }
   };
 
+  useEffect(() => {
+    const expired = () => { setUser(null); websocketService.disconnectAll(); };
+    window.addEventListener('session-expired', expired);
+    return () => window.removeEventListener('session-expired', expired);
+  }, []);
+
   const logout = () => {
+    void apiService.request('POST', '/auth/logout').catch(() => {});
+    websocketService.disconnectAll();
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setUser(null);

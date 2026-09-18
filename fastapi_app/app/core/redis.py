@@ -1,7 +1,7 @@
 """
 Redis connection and configuration for WebSocket broadcasting
 """
-import aioredis
+import redis.asyncio as aioredis
 from .config import settings
 
 

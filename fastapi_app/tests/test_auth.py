@@ -101,7 +101,7 @@ class TestAuth:
         """Test getting current user without token"""
         response = client.get("/api/v1/auth/me")
         
-        assert response.status_code == 403
+        assert response.status_code == 401
     
     def test_get_current_user_invalid_token(self, client: TestClient):
         """Test getting current user with invalid token"""
@@ -127,7 +127,7 @@ class TestAuth:
             json={"refresh_token": refresh_token}
         )
         
-        assert response.status_code == 404  # Endpoint not implemented yet
+        assert response.status_code == 200
     
     def test_refresh_token_invalid(self, client: TestClient):
         """Test refresh with invalid token"""
@@ -136,4 +136,4 @@ class TestAuth:
             json={"refresh_token": "invalid_token"}
         )
         
-        assert response.status_code == 404  # Endpoint not implemented yet
+        assert response.status_code == 401
