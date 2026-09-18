@@ -1,425 +1,218 @@
-# 🍽️ olgFeast - Restaurant Order Management System
+# Event tablet deployment
 
-A modern Django-based restaurant order management system with live order tracking, shopping cart functionality, and staff management tools.
+For church and nonprofit dinner events, start with [the event guide](docs/EVENT-GUIDE.md).
+This version records tickets sold elsewhere, portion counts, and recipe-based
+estimated ingredient/supply depletion. Organizers use Event station → Setup;
+volunteers use Take orders and Kitchen.
 
-## ✨ Features
+# OlgFeast - Restaurant Management System
 
-- **🛒 Shopping Cart**: Add items, modify quantities, and manage orders
-- **📱 Live Order Tracking**: Real-time order status updates with horizontal workflow
-- **👥 User Management**: Customer registration and staff authentication
-- **🎯 Clickable Order Cards**: Easy order status management for staff
-- **📊 Order Analytics**: Track orders through Pending → Preparing → Ready → Complete
-- **🧪 Comprehensive Testing**: Full test suite for reliable deployment
-- **🔧 Admin Tools**: Staff-only order management controls
+A modern, full-stack restaurant management system built with FastAPI and React. Features include menu management, order processing, kitchen display, and real-time updates via WebSocket.
+
+## 🚀 Features
+
+- **Menu Management**: Dynamic menu with categories and items
+- **Order Processing**: Complete order lifecycle from cart to kitchen
+- **Real-time Updates**: WebSocket-powered live order updates
+- **Kitchen Display**: Real-time kitchen dashboard for staff
+- **Admin Dashboard**: Comprehensive management interface
+- **User Authentication**: Role-based access control (Customer/Staff)
+- **Dark/Light Theme**: Modern UI with theme switching
+- **Responsive Design**: Works on desktop and mobile devices
+
+## 🏗️ Architecture
+
+- **Backend**: FastAPI (Python 3.13)
+- **Frontend**: React 18 with TypeScript
+- **Database**: PostgreSQL
+- **Cache/WebSocket**: Redis
+- **Containerization**: Docker & Docker Compose
+- **Styling**: Tailwind CSS
+
+## 📋 Prerequisites
+
+- Docker & Docker Compose
+- Git
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-- **Python 3.8+** (3.13 recommended)
-- **Git** for cloning the repository
-- **Virtual Environment** (recommended)
-
-### 🔄 Upgrading from Older Versions
-
-If you're upgrading from an older version of olgFeast:
+### 1. Clone the Repository
 
 ```bash
-# Run the automated upgrade script
-./upgrade_app.sh
-
-# Or manually upgrade
-pip install -r requirements.txt
-python upgrade_django.py
+git clone https://github.com/yourusername/olgfeast.git
+cd olgfeast
 ```
 
-**Note**: The application now uses Django 5.2.6 with the latest package versions.
+### 2. First-Time Setup
 
-### 📋 Installation Steps
-
-#### 1. Clone the Repository
-```bash
-git clone https://github.com/matt110111/olgFeast.git
-cd olgFeast
-```
-
-#### 2. Set Up Virtual Environment
-
-**Linux/macOS:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-**Windows:**
-```cmd
-python -m venv venv
-venv\Scripts\activate
-```
-
-#### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-#### 4. Set Up Database
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
-#### 5. Create Superuser (Optional)
-```bash
-python manage.py createsuperuser
-```
-
-#### 6. Run the Server
-```bash
-python manage.py runserver
-```
-
-Visit: **http://127.0.0.1:8000** 🎉
-
----
-
-## 🖥️ Platform-Specific Setup
-
-### 🐧 Linux Setup (Ubuntu/Debian)
+Run the automated setup script:
 
 ```bash
-# Update package manager
-sudo apt update
-
-# Install Python and pip
-sudo apt install python3 python3-pip python3-venv git
-
-# Clone and setup project
-git clone https://github.com/matt110111/olgFeast.git
-cd olgFeast
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Setup database
-python manage.py makemigrations
-python manage.py migrate
-
-# Run server
-python manage.py runserver
+chmod +x first_time_setup.sh
+./first_time_setup.sh
 ```
 
-### 🍎 macOS Setup
+This script will:
+- Generate secure environment variables
+- Set up the database
+- Create initial admin and customer accounts
+- Start all services
+
+> 📖 **New to the project?** See [FRESH_CLONE_SETUP.md](FRESH_CLONE_SETUP.md) for detailed setup instructions and troubleshooting.
+
+### 3. Access the Application
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+
+### 4. Default Login Credentials
+
+The setup script will generate credentials and save them to `deployment_credentials.txt`. 
+
+**Important**: Change these passwords after first login!
+
+## 🛠️ Development
+
+### Start Development Environment
 
 ```bash
-# Install Homebrew (if not installed)
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Install Python
-brew install python git
-
-# Clone and setup project
-git clone https://github.com/matt110111/olgFeast.git
-cd olgFeast
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Setup database
-python manage.py makemigrations
-python manage.py migrate
-
-# Run server
-python manage.py runserver
+./docker-dev.sh
 ```
 
-### 🪟 Windows Setup
+This starts the application with:
+- Hot-reloading for both frontend and backend
+- Development-optimized settings
+- Frontend on port 3001 (to avoid conflicts)
 
-#### Using Command Prompt:
-```cmd
-# Install Python from https://python.org (check "Add to PATH")
+### Stop the Application
 
-# Clone repository (install Git from https://git-scm.com if needed)
-git clone https://github.com/matt110111/olgFeast.git
-cd olgFeast
-
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Setup database
-python manage.py makemigrations
-python manage.py migrate
-
-# Run server
-python manage.py runserver
-```
-
-#### Using PowerShell:
-```powershell
-# Same commands as above, but use:
-venv\Scripts\Activate.ps1
-# instead of:
-venv\Scripts\activate
-```
-
----
-
-## 👤 First Steps After Installation
-
-### 1. Register Your First User
-1. Visit: **http://127.0.0.1:8000/register/**
-2. Create an account with your details
-3. You'll be automatically logged in
-
-### 2. Create Staff User (Optional)
 ```bash
-python manage.py shell
+./docker-stop.sh
 ```
-```python
-from django.contrib.auth.models import User
-user = User.objects.create_user('staff', 'staff@example.com', 'password123')
-user.is_staff = True
-user.save()
-exit()
-```
-
-### 3. Browse Menu & Place Orders
-1. Visit: **http://127.0.0.1:8000/shop/**
-2. Browse available food items
-3. Add items to your cart
-4. View cart: **http://127.0.0.1:8000/cart/order-summary/**
-5. Checkout when ready
-
-### 4. Track Orders (Staff Only)
-1. Login as staff user
-2. Visit: **http://127.0.0.1:8000/cart/order-tracking/**
-3. Click on orders to update status:
-   - **Pending** → **Preparing** → **Ready** → **Complete**
-
----
-
-## 🧪 Testing
-
-### Quick Functionality Test
-```bash
-python quick_test.py
-```
-
-### Full Test Suite
-```bash
-./run_all_tests.sh
-```
-
-### Individual App Tests
-```bash
-python manage.py test shopping_cart
-python manage.py test accounts
-python manage.py test shop_front
-```
-
----
-
-## 🗄️ Database Management
-
-### Clear All Data (Fresh Start)
-```bash
-python clear_transactions.py
-```
-⚠️ **Warning**: This removes all users, profiles, and transactions!
-
-### Reset Database (Nuclear Option)
-```bash
-rm n_db.sqlite3
-python manage.py makemigrations
-python manage.py migrate
-python manage.py createsuperuser
-```
-
----
-
-## 🔧 Configuration
-
-### Environment Variables
-Create a `.env` file for custom settings:
-```env
-DEBUG=True
-SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///n_db.sqlite3
-```
-
-### Django Settings
-Key settings in `olgFeast/settings.py`:
-- `DEBUG = True` (for development)
-- `ALLOWED_HOSTS = ['*']` (for testing)
-- `CRISPY_TEMPLATE_PACK = 'bootstrap3'`
-- `DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'` (Django 5.2+)
-
-### Requirements Files
-- `requirements.txt` - Base requirements for all environments
-- `requirements-dev.txt` - Development tools and testing
-- `requirements-prod.txt` - Production deployment with additional security and performance packages
-
----
 
 ## 📁 Project Structure
 
 ```
-olgFeast/
-├── accounts/              # User profiles and authentication
-├── shop_front/           # Menu display and item management
-├── shopping_cart/        # Cart functionality and order tracking
-├── users/                # User registration and login
-├── olgFeast/            # Main Django settings
-├── templates/           # Base templates
-├── static/              # CSS, JS, and static files
-├── n_db.sqlite3         # SQLite database
-├── requirements.txt     # Python dependencies
-├── manage.py           # Django management script
-└── README.md           # This file
+olgfeast/
+├── fastapi_app/          # Backend (FastAPI)
+│   ├── app/
+│   │   ├── api/         # API endpoints
+│   │   ├── core/        # Core configuration
+│   │   ├── models/      # Database models
+│   │   ├── schemas/     # Pydantic schemas
+│   │   ├── services/    # Business logic
+│   │   └── websocket/   # WebSocket handlers
+│   ├── alembic/         # Database migrations
+│   ├── tests/           # Backend tests
+│   └── requirements.txt
+├── frontend/             # Frontend (React)
+│   ├── src/
+│   │   ├── components/  # React components
+│   │   ├── contexts/    # React contexts
+│   │   ├── services/    # API services
+│   │   └── types/       # TypeScript types
+│   └── package.json
+├── docker-compose.yml    # Production Docker setup
+├── docker-compose.override.yml  # Development overrides
+└── first_time_setup.sh   # Automated setup script
 ```
 
----
+## 🔧 Configuration
 
-## 🌐 URLs and Navigation
+### Environment Variables
 
-| URL | Description | Access |
-|-----|-------------|--------|
-| `/` | Home page | Public |
-| `/shop/` | Browse menu | Authenticated |
-| `/cart/order-summary/` | View cart | Authenticated |
-| `/cart/order-tracking/` | Live order tracking | Staff only |
-| `/register/` | User registration | Public |
-| `/login/` | User login | Public |
-| `/logout/` | User logout | Authenticated |
-| `/admin/` | Django admin | Superuser only |
+Copy the example files and update with your values:
 
----
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-#### 1. **ModuleNotFoundError: No module named 'django'**
 ```bash
-# Activate virtual environment
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
-
-# Install Django
-pip install Django==5.2.6
+cp docker.env.example docker.env
+cp fastapi_app/env.example fastapi_app/.env
 ```
 
-#### 2. **Database is locked**
+### Security
+
+- Change default passwords after setup
+- Use strong, unique passwords for production
+- Consider using environment-specific configurations
+- Enable HTTPS in production
+
+## 🧪 Testing
+
+### Backend Tests
+
 ```bash
-# Stop any running Django servers
-# Delete database and recreate
-rm n_db.sqlite3
-python manage.py migrate
+cd fastapi_app
+python -m pytest
 ```
 
-#### 3. **Permission denied on Linux/macOS**
+### Frontend Tests
+
 ```bash
-# Make scripts executable
-chmod +x run_all_tests.sh
-chmod +x clear_transactions.py
+cd frontend
+npm test
 ```
 
-#### 4. **Port 8000 already in use**
+## 🚀 Deployment
+
+### Automatic CI/CD Deployment
+
+OlgFeast includes a complete CI/CD pipeline using GitHub Actions and GitHub Container Registry for automatic deployments with **multi-architecture support** (x86 and ARM).
+
+📖 **For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
+
+**Quick Setup:**
+1. Set up GitHub Personal Access Token with package permissions
+2. Add repository secrets (`GITHUB_TOKEN`, `GITHUB_OWNER`)
+3. Push to main branch → Automatic build and deployment
+4. Deploy to production server using provided scripts
+
+**Supported Platforms:**
+- ✅ **x86_64 (amd64)**: Most servers, cloud providers
+- ✅ **ARM64**: Raspberry Pi, ARM servers, Apple Silicon Macs
+
+**Features:**
+- ✅ **Zero-cost** deployment (GitHub Actions + GHCR free tiers)
+- ✅ **Automatic builds** on git push
+- ✅ **Zero-downtime deployments** with health checks
+- ✅ **Rollback capabilities** for quick recovery
+- ✅ **Production-ready** Docker images
+
+### Manual Production Deployment
+
 ```bash
-# Use different port
-python manage.py runserver 8080
+# Build and start in production mode
+./docker-start.sh
+
+# Stop and clean up
+./docker-stop.sh
+
+# Deploy using production script (after CI/CD setup)
+./deploy.sh deploy
 ```
-
-#### 5. **Git push authentication failed**
-```bash
-# Set up SSH keys or use HTTPS with token
-git remote set-url origin https://github.com/username/olgFeast.git
-```
-
-### Getting Help
-
-1. **Check the test suite**: `python quick_test.py`
-2. **Review Django logs**: Check terminal output for errors
-3. **Verify database**: `python manage.py shell` then `from django.db import connection; connection.cursor()`
-4. **Check dependencies**: `pip list | grep Django`
-
----
-
-## 🔄 Development Workflow
-
-### Making Changes
-1. **Run tests first**: `python quick_test.py`
-2. **Make your changes**
-3. **Run tests again**: `python quick_test.py`
-4. **Commit changes**: `git add . && git commit -m "Your message"`
-5. **Push to repository**: `git push origin master`
-
-### Adding New Features
-1. Create new Django app: `python manage.py startapp new_feature`
-2. Add to `INSTALLED_APPS` in settings.py
-3. Create models, views, and templates
-4. Add tests to `new_feature/tests.py`
-5. Update documentation
-
----
-
-## 📊 System Requirements
-
-### Minimum Requirements
-- **Python**: 3.8+
-- **RAM**: 512MB
-- **Storage**: 100MB
-- **OS**: Windows 10+, macOS 10.14+, Ubuntu 18.04+
-
-### Recommended
-- **Python**: 3.13
-- **RAM**: 2GB+
-- **Storage**: 1GB+
-- **OS**: Latest version of your platform
-
----
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes
-4. Run tests: `python quick_test.py`
-5. Commit changes: `git commit -m "Add feature-name"`
-6. Push to branch: `git push origin feature-name`
-7. Create a Pull Request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [FastAPI](https://fastapi.tiangolo.com/)
+- Frontend powered by [React](https://reactjs.org/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Containerized with [Docker](https://www.docker.com/)
+
+## 📞 Support
+
+If you have any questions or need help, please open an issue on GitHub.
 
 ---
 
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-## 🎯 Roadmap
-
-- [ ] Payment integration (Stripe/PayPal)
-- [ ] Email notifications
-- [ ] Mobile app (React Native)
-- [ ] Advanced analytics dashboard
-- [ ] Multi-location support
-- [ ] Inventory management
-- [ ] Customer loyalty program
-
----
-
-**Happy Coding! 🚀**
-
-For support, create an issue on GitHub or contact the development team.
+**Note**: This is a demo application. For production use, ensure proper security measures, database backups, and monitoring are in place.

@@ -1,0 +1,56 @@
+{
+  "clients": 48,
+  "rooms": 2,
+  "errors": 0,
+  "orders": 48,
+  "metrics": {
+    "48_simultaneous_checkouts": {
+      "requests": 48,
+      "elapsed_s": 1.108,
+      "p95_s": 1.048,
+      "max_s": 1.098
+    },
+    "48_simultaneous_retries": {
+      "requests": 48,
+      "elapsed_s": 0.494,
+      "p95_s": 0.442,
+      "max_s": 0.45
+    },
+    "48_tablets_refresh_wave_1": {
+      "requests": 48,
+      "elapsed_s": 1.37,
+      "p95_s": 1.333,
+      "max_s": 1.353
+    },
+    "48_tablets_refresh_wave_2": {
+      "requests": 48,
+      "elapsed_s": 1.218,
+      "p95_s": 1.198,
+      "max_s": 1.217
+    },
+    "48_tablets_refresh_wave_3": {
+      "requests": 48,
+      "elapsed_s": 1.24,
+      "p95_s": 1.221,
+      "max_s": 1.237
+    },
+    "48_preparing": {
+      "requests": 48,
+      "elapsed_s": 0.518,
+      "p95_s": 0.476,
+      "max_s": 0.497
+    },
+    "48_ready": {
+      "requests": 48,
+      "elapsed_s": 0.509,
+      "p95_s": 0.469,
+      "max_s": 0.487
+    },
+    "48_complete": {
+      "requests": 48,
+      "elapsed_s": 0.527,
+      "p95_s": 0.482,
+      "max_s": 0.492
+    }
+  }
+}
